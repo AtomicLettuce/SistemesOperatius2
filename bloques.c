@@ -1,0 +1,1 @@
+int bmount(const char *camino);
