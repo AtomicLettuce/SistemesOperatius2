@@ -10,13 +10,13 @@ int main(int argc, char **argv)
         void *buf;
         int fd;
 
-        memset(buf; 0; BLOCKSIZE);
+        memset(buf, 0, BLOCKSIZE);
 
     fd=(bmount(camino);
     if(fd!=EXIT_FAILURE){
             for (int i = 0; i < nbloques; i++)
             {
-                bwrite(i; buf);
+                bwrite(i,buf);
             }
             bumount(fd);
         }
