@@ -1,8 +1,9 @@
 #include "bloques.h"
 
+int descriptor;
+
 int bmount(const char *camino){
-    int descriptor;
-    if(descriptor=open(*camino,0666) == -1){
+    if(descriptor=open(camino,0666) == -1){
         perror("Error");
         return -1;
     }
@@ -21,19 +22,19 @@ int bwrite(unsigned int nbloque, const void *buf){
         perror("Error");
         return -1;
     }
-    if(rw=write(descriptor,*buf,BLOCKSIZE) == -1){
+    if(rw=write(descriptor,buf,BLOCKSIZE) == -1){
         perror("Error");
         return -1;
     }
     return rw;
 }
 int bread(unsigned int nbloque, void *buf){
-    int rw;
+    int wr;
     if(lseek(descriptor,nbloque*BLOCKSIZE,SEEK_SET) == -1){
         perror("Error");
         return -1;
     }
-    if(wr=read(descriptor,*buf,BLOCKSIZE) == -1){
+    if(wr=read(descriptor,buf,BLOCKSIZE) == -1){
         perror("Error");
         return -1;
     }
