@@ -12,8 +12,8 @@ int main(int argc, char **argv)
 
         memset(buf, 0, BLOCKSIZE);
 
-    fd=(bmount(camino);
-    if(fd!=EXIT_FAILURE){
+    fd=(bmount(camino));
+    if(fd!=-1){
             for (int i = 0; i < nbloques; i++)
             {
                 bwrite(i,buf);
@@ -21,6 +21,6 @@ int main(int argc, char **argv)
             bumount(fd);
         }
     }else{
-        fprintf("ERROR: Número de parámetros erróneo");
+        perror("ERROR");
     }
 }
