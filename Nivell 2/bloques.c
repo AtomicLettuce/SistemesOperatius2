@@ -4,7 +4,7 @@ int descriptor;
 
 int bmount(const char *camino){
     if((descriptor=open(camino,O_RDWR|O_CREAT)) == -1){
-        perror("Errorsito");
+        perror("Error");
         return -1;
     }
     return descriptor;

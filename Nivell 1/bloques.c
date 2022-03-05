@@ -3,8 +3,8 @@
 int descriptor;
 
 int bmount(const char *camino){
-    if((descriptor=open(camino,O_RDWR|O_CREAT,0666)) == -1){
-        perror("Errorsito");
+    if((descriptor=open(camino,O_RDWR|O_CREAT)) == -1){
+        perror("Error");
         return -1;
     }
     return descriptor;
