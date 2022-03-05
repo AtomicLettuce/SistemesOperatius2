@@ -1,14 +1,12 @@
 #include "bloques.h"
 #include "ficheros_basico.h"
-int main(int argc, char **argv);
-
 int main(int argc, char **argv)
 {
     if (argc == 3)
     {
         char *camino = argv[1];
         int nbloques = atoi(argv[2]);
-        void *buf;
+        void *buf=malloc(BLOCKSIZE);
         int fd;
 
         memset(buf, 0, BLOCKSIZE);
