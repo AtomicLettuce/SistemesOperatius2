@@ -53,3 +53,59 @@ int initSB(unsigned int nbloques, unsigned int ninodos){
     return 0;
 }
 
+// Esta función se encargará de inicializar la lista de inodos libres.
+int initAI(){
+
+    // Buffer para ir recorriendo el array de inodos
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
+     
+    //Leemos el superbloque para obtener la localización del array de inodos.
+    if(bread(0,&SB)==-1){
+
+        perror("Error");
+        return -1;
+    }
+
+    unsigned int contInodos = SB.posPrimerInodoLibre + 1;
+
+    // Para cada bloque del array de inodos.
+    for(int i = SB.posPrimerBloqueAI; i<= SB.posUltimoBloqueAI; i++){
+
+        //Leemos el bloque de inodos
+        if(bread(i,inodos)==-1){
+
+            perror("Error");
+            return -1;
+        }
+
+        // Para cada inodo del array de inodos
+        for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
+     
+            inodos[j].tipo='l'; //Indicamos que el tipo de inodo es libre ('l')
+
+            // Si no hemos llegado al último inodo.
+            if(contInodos< SB.totInodos){
+
+                // Enlazamos el inodo con el siguiente.
+                inodos[j].punterosDirectos[0] = contInodos;  
+                contInodos++;
+
+            }else{
+
+               
+                inodos[j].punterosDirectos[0] = UINT_MAX;
+                break;
+            }
+
+        }
+
+        // Escribimos el bloque de inodos i en el dispositivo virtual
+        if (bwrite(i, inodos) == -1) {
+           perror("Error");
+          return -1;
+        }
+
+    }
+
+    return 0;
+}
