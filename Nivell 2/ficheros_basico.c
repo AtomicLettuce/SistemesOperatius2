@@ -1,6 +1,9 @@
 
 #include "ficheros_basico.h"
 
+// DEMANAR SI AIXÒ HAURIA D'ESTAR AQUI !!!!!!!!!
+struct superbloque SB;
+
 int tamMB(unsigned int nbloques){
     int tam = (nbloques/8)/BLOCKSIZE; 
     if ((nbloques/8) % BLOCKSIZE != 0){
@@ -17,9 +20,23 @@ int tamAI(unsigned int ninodos){
     return tam;
 }
 
-int initSB(unsigned int nbloques, unsigned int ninodos){
-    struct superbloque SB;
-    
+int initMB(){
+    // Declaramos un búfer tan grande como un bloque
+    unsigned char* buf=malloc(BLOCKSIZE);
+    // Contenido de buffer = todo 0s
+    memset(buf,0,BLOCKSIZE);
+
+    // Ponemos todo el MB a 0s
+    for(int i=SB.posPrimerBloqueMB;i<=SB.posUltimoBloqueMB;i++){
+        bwrite(i,buf);
+    }
+
+    // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
+    // I SI AIXO ES CORRECTE
+    return 0;
+}
+
+int initSB(unsigned int nbloques, unsigned int ninodos){    
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
