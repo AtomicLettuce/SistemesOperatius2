@@ -1,3 +1,4 @@
+
 #include "ficheros_basico.h"
 
 int tamMB(unsigned int nbloques){
@@ -34,3 +35,4 @@ int initSB(unsigned int nbloques, unsigned int ninodos){
     bwrite(posSB,&SB);
     return 0;
 }
+
