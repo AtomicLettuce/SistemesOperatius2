@@ -32,7 +32,7 @@ int initMB()
     memset(buf, 0, BLOCKSIZE);
 
     // Ponemos todo el MB a 0s
-    for (int i = SB.posPrimerBloqueMB; i <= SB.posUltimoBloqueMB; i++)
+    for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
     {
         if (bwrite(i, buf) == -1)
         {
