@@ -4,31 +4,41 @@
 // DEMANAR SI AIXÒ HAURIA D'ESTAR AQUI !!!!!!!!!
 struct superbloque SB;
 
-int tamMB(unsigned int nbloques){
-    int tam = (nbloques/8)/BLOCKSIZE; 
-    if ((nbloques/8) % BLOCKSIZE != 0){
+int tamMB(unsigned int nbloques)
+{
+    int tam = (nbloques / 8) / BLOCKSIZE;
+    if ((nbloques / 8) % BLOCKSIZE != 0)
+    {
         return (tam + 1);
     }
     return tam;
 }
 
-int tamAI(unsigned int ninodos){
-    int tam = (ninodos*INODOSIZE)/BLOCKSIZE;
-    if ((ninodos*INODOSIZE) % BLOCKSIZE != 0){
+int tamAI(unsigned int ninodos)
+{
+    int tam = (ninodos * INODOSIZE) / BLOCKSIZE;
+    if ((ninodos * INODOSIZE) % BLOCKSIZE != 0)
+    {
         return (tam + 1);
     }
     return tam;
 }
 
-int initMB(){
+int initMB()
+{
     // Declaramos un búfer tan grande como un bloque
-    unsigned char* buf=malloc(BLOCKSIZE);
+    unsigned char *buf = malloc(BLOCKSIZE);
     // Contenido de buffer = todo 0s
-    memset(buf,0,BLOCKSIZE);
+    memset(buf, 0, BLOCKSIZE);
 
     // Ponemos todo el MB a 0s
-    for(int i=SB.posPrimerBloqueMB;i<=SB.posUltimoBloqueMB;i++){
-        bwrite(i,buf);
+    for (int i = SB.posPrimerBloqueMB; i <= SB.posUltimoBloqueMB; i++)
+    {
+        if (bwrite(i, buf) == -1)
+        {
+            perror("ERROR");
+            return -1;
+        }
     }
 
     // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
@@ -36,7 +46,8 @@ int initMB(){
     return 0;
 }
 
-int initSB(unsigned int nbloques, unsigned int ninodos){    
+int initSB(unsigned int nbloques, unsigned int ninodos)
+{
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -49,18 +60,20 @@ int initSB(unsigned int nbloques, unsigned int ninodos){
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
-    bwrite(posSB,&SB);
+    bwrite(posSB, &SB);
     return 0;
 }
 
 // Esta función se encargará de inicializar la lista de inodos libres.
-int initAI(){
+int initAI()
+{
 
     // Buffer para ir recorriendo el array de inodos
-    struct inodo inodos[BLOCKSIZE/INODOSIZE];
-     
-    //Leemos el superbloque para obtener la localización del array de inodos.
-    if(bread(0,&SB)==-1){
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    // Leemos el superbloque para obtener la localización del array de inodos.
+    if (bread(0, &SB) == -1)
+    {
 
         perror("Error");
         return -1;
@@ -69,42 +82,45 @@ int initAI(){
     unsigned int contInodos = SB.posPrimerInodoLibre + 1;
 
     // Para cada bloque del array de inodos.
-    for(int i = SB.posPrimerBloqueAI; i<= SB.posUltimoBloqueAI; i++){
+    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
+    {
 
-        //Leemos el bloque de inodos
-        if(bread(i,inodos)==-1){
+        // Leemos el bloque de inodos
+        if (bread(i, inodos) == -1)
+        {
 
             perror("Error");
             return -1;
         }
 
         // Para cada inodo del array de inodos
-        for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++) {
-     
-            inodos[j].tipo='l'; //Indicamos que el tipo de inodo es libre ('l')
+        for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
+        {
+
+            inodos[j].tipo = 'l'; // Indicamos que el tipo de inodo es libre ('l')
 
             // Si no hemos llegado al último inodo.
-            if(contInodos< SB.totInodos){
+            if (contInodos < SB.totInodos)
+            {
 
                 // Enlazamos el inodo con el siguiente.
-                inodos[j].punterosDirectos[0] = contInodos;  
+                inodos[j].punterosDirectos[0] = contInodos;
                 contInodos++;
+            }
+            else
+            {
 
-            }else{
-
-               
                 inodos[j].punterosDirectos[0] = UINT_MAX;
                 break;
             }
-
         }
 
         // Escribimos el bloque de inodos i en el dispositivo virtual
-        if (bwrite(i, inodos) == -1) {
-           perror("Error");
-          return -1;
+        if (bwrite(i, inodos) == -1)
+        {
+            perror("Error");
+            return -1;
         }
-
     }
 
     return 0;
