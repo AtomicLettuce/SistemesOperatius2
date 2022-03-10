@@ -47,9 +47,7 @@ int initMB()
             return -1;
         }
     }
-
-    // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
-    // I SI AIXO ES CORRECTE
+    
     return 0;
 }
 
@@ -58,7 +56,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     // Inicializamos el superbloque
 
     struct superbloque SB;
-    
+
 
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
@@ -101,7 +99,6 @@ int initAI()
     for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
     {
 
-
         // Para cada inodo del array de inodos
         for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
         {
@@ -129,7 +126,5 @@ int initAI()
             return -1;
         }
     }
-
-    // Tornar 0?
     return 0;
 }
