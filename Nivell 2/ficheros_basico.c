@@ -1,9 +1,6 @@
 
 #include "ficheros_basico.h"
 
-// DEMANAR SI AIXÒ HAURIA D'ESTAR AQUI !!!!!!!!!
-struct superbloque SB;
-
 int tamMB(unsigned int nbloques)
 {
     int tam = (nbloques / 8) / BLOCKSIZE;
@@ -31,6 +28,14 @@ int initMB()
     // Contenido de buffer = todo 0s
     memset(buf, 0, BLOCKSIZE);
 
+    // Leemos el superbloque
+    struct superbloque SB;
+    if (bread(0, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
     // Ponemos todo el MB a 0s
     for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
     {
@@ -48,6 +53,8 @@ int initMB()
 
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
+    struct superbloque SB;
+    
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -72,9 +79,9 @@ int initAI()
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
     // Leemos el superbloque para obtener la localización del array de inodos.
+    struct superbloque SB;
     if (bread(0, &SB) == -1)
     {
-
         perror("Error");
         return -1;
     }
