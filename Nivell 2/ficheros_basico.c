@@ -86,6 +86,7 @@ int initAI()
     {
 
         // Leemos el bloque de inodos
+        // És necessari llegir es bloque de inodos?
         if (bread(i, inodos) == -1)
         {
 
@@ -123,5 +124,6 @@ int initAI()
         }
     }
 
+    // Tornar 0?
     return 0;
 }
