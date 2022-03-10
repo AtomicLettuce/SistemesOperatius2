@@ -41,7 +41,7 @@ int initMB()
     {
         if (bwrite(i, buf) == -1)
         {
-            perror("ERROR");
+            perror("Error");
             return -1;
         }
     }
@@ -53,8 +53,12 @@ int initMB()
 
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
+
+    // Inicializamos el superbloque
+
     struct superbloque SB;
     
+
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -67,7 +71,11 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
-    bwrite(posSB, &SB);
+    if (bwrite(posSB, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
     return 0;
 }
 
@@ -96,7 +104,6 @@ int initAI()
         // És necessari llegir es bloque de inodos?
         if (bread(i, inodos) == -1)
         {
-
             perror("Error");
             return -1;
         }
@@ -110,14 +117,12 @@ int initAI()
             // Si no hemos llegado al último inodo.
             if (contInodos < SB.totInodos)
             {
-
                 // Enlazamos el inodo con el siguiente.
                 inodos[j].punterosDirectos[0] = contInodos;
                 contInodos++;
             }
             else
             {
-
                 inodos[j].punterosDirectos[0] = UINT_MAX;
                 break;
             }
