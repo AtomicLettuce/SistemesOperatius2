@@ -1,6 +1,7 @@
 
 #include "ficheros_basico.h"
 
+
 int tamMB(unsigned int nbloques)
 {
     int tam = (nbloques / 8) / BLOCKSIZE;
@@ -23,6 +24,7 @@ int tamAI(unsigned int ninodos)
 
 int initMB()
 {
+    struct superbloque SB;
     // Declaramos un búfer tan grande como un bloque
     unsigned char *buf = malloc(BLOCKSIZE);
     // Contenido de buffer = todo 0s
@@ -53,7 +55,6 @@ int initMB()
 
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
-
     // Inicializamos el superbloque
 
     struct superbloque SB;
@@ -82,7 +83,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
 // Esta función se encargará de inicializar la lista de inodos libres.
 int initAI()
 {
-
+    struct superbloque SB;
     // Buffer para ir recorriendo el array de inodos
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
@@ -100,13 +101,6 @@ int initAI()
     for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
     {
 
-        // Leemos el bloque de inodos
-        // És necessari llegir es bloque de inodos?
-        if (bread(i, inodos) == -1)
-        {
-            perror("Error");
-            return -1;
-        }
 
         // Para cada inodo del array de inodos
         for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
