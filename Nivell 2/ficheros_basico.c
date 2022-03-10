@@ -30,6 +30,14 @@ int initMB()
     // Contenido de buffer = todo 0s
     memset(buf, 0, BLOCKSIZE);
 
+    // Leemos el superbloque
+    struct superbloque SB;
+    if (bread(0, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
     // Ponemos todo el MB a 0s
     for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
     {
@@ -47,8 +55,11 @@ int initMB()
 
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
-    struct superbloque SB;
     // Inicializamos el superbloque
+
+    struct superbloque SB;
+    
+
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -77,9 +88,9 @@ int initAI()
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
     // Leemos el superbloque para obtener la localización del array de inodos.
+    struct superbloque SB;
     if (bread(0, &SB) == -1)
     {
-
         perror("Error");
         return -1;
     }
@@ -89,6 +100,7 @@ int initAI()
     // Para cada bloque del array de inodos.
     for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
     {
+
 
         // Para cada inodo del array de inodos
         for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
@@ -118,5 +130,6 @@ int initAI()
         }
     }
 
+    // Tornar 0?
     return 0;
 }
