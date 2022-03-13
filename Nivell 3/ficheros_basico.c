@@ -54,7 +54,7 @@ int initMB()
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
     struct superbloque SB;
-    
+
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -133,4 +133,128 @@ int initAI()
 
     // Tornar 0?
     return 0;
+}
+
+int escribir_bit(unsigned int nbloque, unsigned int bit)
+{
+    // Leemos el superbloque y nos lo guardamos paro usarlo más tarde
+    struct superbloque SB;
+    if (bread(0, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    int posbyte = nbloque / 8;
+    int posbit = nbloque % 8;
+
+    // Nbloque relativo dentro del mapa de bits
+    int nbloqueMB = posbyte / BLOCKSIZE;
+
+    // nbloque real dentro del disco
+    int nbloqueabs=SB.posPrimerBloqueMB+nbloqueMB;
+
+    // Leemos el bloque
+    unsigned char bufferMB[BLOCKSIZE];
+    if (bread(nbloqueabs, bufferMB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Calculamos el offset con respecto al bloque que hemos leído
+    posbyte=posbyte%BLOCKSIZE;
+
+    // Declaramos la máscara
+    unsigned char mascara=128;  //10000000
+    // Desplazamos para que el 1 esté situado en la posición posbit-ésima
+    mascara>>=posbit;
+
+
+    // Escribimos el bit
+    // Caso 1
+    if(bit==1){
+        bufferMB[posbyte]|=mascara;
+    }
+    // Caso 0
+    else if (bit==0)
+    {
+        bufferMB[posbyte]&=~mascara;
+    }
+    // Caso Error
+    else{
+        return -1;
+    }
+
+    if(bwrite(nbloqueabs,bufferMB)==-1){
+        perror("ERROR: ");
+        return -1;
+    }
+    return 0;
+
+
+
+}
+
+int leer_bit(unsigned int nbloque)
+{
+    // Leemos el superbloque y nos lo guardamos paro usarlo más tarde
+    struct superbloque SB;
+    if (bread(0, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    int posbyte = nbloque / 8;
+    int posbit = nbloque % 8;
+
+    // Nbloque relativo dentro del mapa de bits
+    int nbloqueMB = posbyte / BLOCKSIZE;
+
+    // nbloque real dentro del disco
+    int nbloqueabs=SB.posPrimerBloqueMB+nbloqueMB;
+
+    // Leemos el bloque
+    unsigned char bufferMB[BLOCKSIZE];
+    if (bread(nbloqueabs, bufferMB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Calculamos el offset con respecto al bloque que hemos leído
+    posbyte=posbyte%BLOCKSIZE;
+
+    // Declaramos la máscara
+    unsigned char mascara =128;//10000000
+
+    // Movemos el 1 de la máscara para que esté encima del mismo bit que queremos leer
+    mascara>>=posbit;
+    // Evaluamos el valor del bit
+    mascara&=bufferMB[posbyte];
+    // Desplazamos para obtener resultado
+    mascara>>=(7-posbit);
+
+    // Devolvemos el resultado
+    return mascara;
+}
+
+
+
+
+int reservar_bloque(){
+
+}
+int liberar_bloque(unsigned int bloque){
+
+}
+int escribir_inodo(unsigned int ninodo,struct inodo inodo){
+
+}
+int leer_inodo(unsigned int ninodo, struct inodo *inodo){
+
+}
+int reservar_inodo(unsigned char tipo, unsigned char permisos){
+    
 }
