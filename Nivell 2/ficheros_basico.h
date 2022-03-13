@@ -61,7 +61,5 @@ int tamAI(unsigned int ninodos);
 int initSB(unsigned int nbloques, unsigned int ninodos);
 int initMB(); 
 int initAI();
-int reservar_bloque();
-int liberar_bloque(unsigned int nbloque);
-int reservar_inodo(unsigned char tipo, unsigned char permisos);
+
 
