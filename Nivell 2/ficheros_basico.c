@@ -22,29 +22,6 @@ int tamAI(unsigned int ninodos)
     return tam;
 }
 
-int initMB()
-{
-    struct superbloque SB;
-    // Declaramos un búfer tan grande como un bloque
-    unsigned char *buf = malloc(BLOCKSIZE);
-    // Contenido de buffer = todo 0s
-    memset(buf, 0, BLOCKSIZE);
-
-    // Ponemos todo el MB a 0s
-    for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
-    {
-        if (bwrite(i, buf) == -1)
-        {
-            perror("Error");
-            return -1;
-        }
-    }
-
-    // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
-    // I SI AIXO ES CORRECTE
-    return 0;
-}
-
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
     struct superbloque SB;
@@ -68,6 +45,38 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     }
     return 0;
 }
+
+int initMB()
+{
+    struct superbloque SB;
+    // Declaramos un búfer tan grande como un bloque
+    unsigned char *buf = malloc(BLOCKSIZE);
+    // Contenido de buffer = todo 0s
+    memset(buf, 0, BLOCKSIZE);
+
+     // Leemos el superbloque para obtener la localización del array de inodos.
+    if (bread(0, &SB) == -1)
+    {
+
+        perror("Error");
+        return -1;
+    }
+
+    // Ponemos todo el MB a 0s
+    for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
+    {
+        if (bwrite(i, buf) == -1)
+        {
+            perror("Error");
+            return -1;
+        }
+    }
+
+    // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
+    // I SI AIXO ES CORRECTE
+    return 0;
+}
+
 
 // Esta función se encargará de inicializar la lista de inodos libres.
 int initAI()
