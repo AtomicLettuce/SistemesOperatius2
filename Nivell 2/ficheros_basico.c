@@ -22,10 +22,13 @@ int tamAI(unsigned int ninodos)
     return tam;
 }
 
+
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
-    struct superbloque SB;
     // Inicializamos el superbloque
+
+    struct superbloque SB;
+
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -81,14 +84,13 @@ int initMB()
 // Esta función se encargará de inicializar la lista de inodos libres.
 int initAI()
 {
-    struct superbloque SB;
     // Buffer para ir recorriendo el array de inodos
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
     // Leemos el superbloque para obtener la localización del array de inodos.
+    struct superbloque SB;
     if (bread(0, &SB) == -1)
     {
-
         perror("Error");
         return -1;
     }
@@ -99,6 +101,15 @@ int initAI()
     for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
     {
 
+        // Leemos el bloque de inodos
+        // És necessari llegir es bloque de inodos?
+        if (bread(i, inodos) == -1)
+        {
+
+            perror("Error");
+            return -1;
+        }
+
         // Para cada inodo del array de inodos
         for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
         {
@@ -108,12 +119,14 @@ int initAI()
             // Si no hemos llegado al último inodo.
             if (contInodos < SB.totInodos)
             {
+
                 // Enlazamos el inodo con el siguiente.
                 inodos[j].punterosDirectos[0] = contInodos;
                 contInodos++;
             }
             else
             {
+
                 inodos[j].punterosDirectos[0] = UINT_MAX;
                 break;
             }
@@ -127,5 +140,6 @@ int initAI()
         }
     }
 
+    // Tornar 0?
     return 0;
 }
