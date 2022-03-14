@@ -1,4 +1,3 @@
-#include "bloques.h"
 #include "ficheros_basico.h"
 int main(int argc, char **argv)
 {
@@ -17,6 +16,7 @@ int main(int argc, char **argv)
             {
                 bwrite(i,buf);
             }
+            reservar_inodo('d',7);
             bumount(fd);
         }
     }else{

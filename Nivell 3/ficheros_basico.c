@@ -370,6 +370,12 @@ int liberar_bloque(unsigned int nbloque)
 }
 int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
 {
+    struct superbloque SB;
+    if (bread(0, &SB) == ERROR)
+    {
+        perror("Error");
+        return ERROR;
+    }
 }
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
