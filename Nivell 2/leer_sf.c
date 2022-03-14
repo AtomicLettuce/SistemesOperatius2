@@ -8,7 +8,7 @@ int main(int argc, char **argv){
     {
         char *camino = argv[1];
     }
-    if(bmount(&camino) == -1){
+    if(bmount(camino) == -1){
         return -1;
     }
     if(bread(0,&SB) != -1){
