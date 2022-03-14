@@ -56,14 +56,6 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     // Inicializamos el superbloque
 
     struct superbloque SB;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    
->>>>>>> 0b5fe9645406ab4700d22d5664be202e2345dae4
-=======
-
->>>>>>> 2aaf79a3f04c210b0f52eada293ee680bb3de086
 
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
