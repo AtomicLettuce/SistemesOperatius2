@@ -152,7 +152,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
     int nbloqueMB = posbyte / BLOCKSIZE;
 
     // nbloque real dentro del disco
-    int nbloqueabs=SB.posPrimerBloqueMB+nbloqueMB;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
     // Leemos el bloque
     unsigned char bufferMB[BLOCKSIZE];
@@ -163,37 +163,36 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
     }
 
     // Calculamos el offset con respecto al bloque que hemos leído
-    posbyte=posbyte%BLOCKSIZE;
+    posbyte = posbyte % BLOCKSIZE;
 
     // Declaramos la máscara
-    unsigned char mascara=128;  //10000000
+    unsigned char mascara = 128; // 10000000
     // Desplazamos para que el 1 esté situado en la posición posbit-ésima
-    mascara>>=posbit;
-
+    mascara >>= posbit;
 
     // Escribimos el bit
     // Caso 1
-    if(bit==1){
-        bufferMB[posbyte]|=mascara;
+    if (bit == 1)
+    {
+        bufferMB[posbyte] |= mascara;
     }
     // Caso 0
-    else if (bit==0)
+    else if (bit == 0)
     {
-        bufferMB[posbyte]&=~mascara;
+        bufferMB[posbyte] &= ~mascara;
     }
     // Caso Error
-    else{
+    else
+    {
         return -1;
     }
 
-    if(bwrite(nbloqueabs,bufferMB)==-1){
+    if (bwrite(nbloqueabs, bufferMB) == -1)
+    {
         perror("ERROR: ");
         return -1;
     }
     return 0;
-
-
-
 }
 
 int leer_bit(unsigned int nbloque)
@@ -213,7 +212,7 @@ int leer_bit(unsigned int nbloque)
     int nbloqueMB = posbyte / BLOCKSIZE;
 
     // nbloque real dentro del disco
-    int nbloqueabs=SB.posPrimerBloqueMB+nbloqueMB;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
     // Leemos el bloque
     unsigned char bufferMB[BLOCKSIZE];
@@ -224,37 +223,148 @@ int leer_bit(unsigned int nbloque)
     }
 
     // Calculamos el offset con respecto al bloque que hemos leído
-    posbyte=posbyte%BLOCKSIZE;
+    posbyte = posbyte % BLOCKSIZE;
 
     // Declaramos la máscara
-    unsigned char mascara =128;//10000000
+    unsigned char mascara = 128; // 10000000
 
     // Movemos el 1 de la máscara para que esté encima del mismo bit que queremos leer
-    mascara>>=posbit;
+    mascara >>= posbit;
     // Evaluamos el valor del bit
-    mascara&=bufferMB[posbyte];
+    mascara &= bufferMB[posbyte];
     // Desplazamos para obtener resultado
-    mascara>>=(7-posbit);
+    mascara >>= (7 - posbit);
 
     // Devolvemos el resultado
     return mascara;
 }
 
+/*
+La función reservar_bloque ncuentra el primer bloque libre, consultando el MB (primer bit a 0),
+lo ocupa y devuelve su posición.
+*/
+int reservar_bloque()
+{
 
+   // Leemos el superbloque 
+    struct superbloque SB;
+    if (bread(posSB, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
 
+    // Si quedan bloques libres en el dispositivo
+    if (SB.cantBloquesLibres>0)
+    {
 
-int reservar_bloque(){
+        unsigned char bufferMB[BLOCKSIZE]; // Buffer para leer el MB
+        memset(bufferMB, 0, BLOCKSIZE);
 
+        unsigned char bufferAux[BLOCKSIZE]; // Buffer auxiliar
+        memset(bufferAux, 255, BLOCKSIZE); 
+
+        // Variable para detectar el primer bit a 0;
+        int primerlibre =0;
+        
+        unsigned int nbloqueabs = SB.posPrimerBloqueMB;
+
+        // Recorremos el MB hasta encontrar localizar el 1er bloque libre iterando con nbloqueabs
+        for (nbloqueabs; nbloqueabs<=SB.posUltimoBloqueMB && primerlibre==0; nbloqueabs++){
+
+            // Cargamos el bloque en el bufferMB
+            if (bread(nbloqueabs,bufferMB) == -1)
+            {
+                perror("Error");
+                return -1;
+            }
+
+            // Si el bloque del bufferMB tiene uno o más bits a 0 --> primerlibre != 0;
+            primerlibre = memcmp(bufferMB,bufferAux, BLOCKSIZE);
+
+        }
+
+        unsigned char mascara = 128; // 10000000
+        int posbit = 0;
+
+        // Recorremos los bytes del bloque para localizar el byte con el bit a 0
+        for (int posbyte =0; posbyte < BLOCKSIZE; posbyte++){
+
+            // Detectamos el byte con el bit a 0
+            if(bufferMB[posbyte]<255){
+
+                // Buscamos la posición del bit a 0
+                while (bufferMB[posbyte] & mascara) { // operador AND para bits
+                bufferMB[posbyte] <<= 1;      // desplazamiento de bits a la izquierda
+                posbit++;
+                }
+
+                int nbloque = ((nbloqueabs - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+
+                // Indicamos que el bloque està reservado
+                escribir_bit(nbloque, 1);  
+
+                // Decrementamos la cantidad de bloques libres del SB
+                SB.cantBloquesLibres = SB.cantBloquesLibres - 1;    
+
+                // Actualizamos el SB
+                if (bwrite(posSB, &SB) == -1) {
+                    perror("Error");
+                }
+
+                // Limpiamos el bloque
+                unsigned char bufferVacio[BLOCKSIZE]; 
+                memset(bufferVacio,0,BLOCKSIZE);
+                if (bwrite(nbloque, &bufferVacio) == -1) {
+
+                return -1;
+                }
+
+                // Devolvemos el nº de bloque que hemos reservado
+                return nbloque;
+            }
+
+        }
+
+    }else{
+
+        // No quedan bloques libres en el dispositivo
+        return -1;
+    }
 }
-int liberar_bloque(unsigned int bloque){
+// La función liberar_que libera un bloque determinado por nbloque
+int liberar_bloque(unsigned int bloque)
+{
 
-}
-int escribir_inodo(unsigned int ninodo,struct inodo inodo){
+    // Ponemos a 0 el bit del MB correspondiente al bloque nbloque
+    escribir_bit(nbloque, 0);
 
-}
-int leer_inodo(unsigned int ninodo, struct inodo *inodo){
+    // Leemos el superbloque
+    struct superbloque SB;
+    if (bread(posSB, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
 
+    // Incrementamos la cantidad de bloques libres en el superbloque.
+    SB.cantBloquesLibres = SB.cantBloquesLibres + 1;
+
+    // Salvamos el SB
+    if (bwrite(posSB, &SB) == -1)
+    {
+        perror("Error");
+    }
+
+    // Devolvemos el nº de bloque liberado, nbloque.
+    return nbloque;
 }
-int reservar_inodo(unsigned char tipo, unsigned char permisos){
-    
+int escribir_inodo(unsigned int ninodo, struct inodo inodo)
+{
+}
+int leer_inodo(unsigned int ninodo, struct inodo *inodo)
+{
+}
+int reservar_inodo(unsigned char tipo, unsigned char permisos)
+{
 }
