@@ -407,6 +407,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         reservado->ctime = time(NULL);
         reservado->mtime = time(NULL);
         reservado->numBloquesOcupados = 0;
+
+        // Actualizamos el SB
+        SB.posPrimerInodoLibre=reservado->punterosDirectos[0];// Actualizamos para que el SB ahora apunte al NUEVO primer nodo libre
+        SB.cantInodosLibres--; // Puesto que reservamos uno
+
+        // *****Lo escribiremos en el disco un poco más adelante *****
+
+        // Ponemos a 0 todos los punteros
         for (int i = 0; i < 12; i++)
         {
             reservado->punterosDirectos[i] = 0;
@@ -416,16 +424,12 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
             reservado->punterosIndirectos[i] = 0;
         }
 
-        // Escribimos los datos en el AI
+        // Escribimos el inodo en el AI
         if (escribir_inodo(posInodoReservado, reservado) == ERROR)
         {
             perror("ERROR: ");
             return ERROR;
         }
-
-        // Actualizamos el SB
-        SB.cantInodosLibres--; // Puesto que reservamos uno
-        SB.posPrimerInodoLibre++;
 
         // Lo escribimos en el disco
         if (bwrite(0, &SB) == ERROR)
@@ -437,7 +441,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         return posInodoReservado;
     }
 
-    // NO QUEDAN INODOS LIBRES
+    // CASO EN EL QUE NO QUEDAN INODOS LIBRES
     else
     {
         printf("No quedan inodos libres\n");
