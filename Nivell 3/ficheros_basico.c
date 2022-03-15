@@ -340,7 +340,7 @@ int reservar_bloque()
         return ERROR;
     }
 }
-// La función liberar_que libera un bloque determinado por nbloque
+// La función liberar_que libera un bloque determinado por nbloque. uep
 int liberar_bloque(unsigned int nbloque)
 {
 
