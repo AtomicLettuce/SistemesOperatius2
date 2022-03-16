@@ -16,8 +16,13 @@ int main(int argc, char **argv)
             {
                 bwrite(i,buf);
             }
+            initSB(nbloques, nbloques/4);
+            initMB();
+            initAI();
             reservar_inodo('d',7);
-            bumount(fd);
+            if(bumount(fd) == -1){
+                perror("ERROR");
+            }
         }
     }else{
         perror("ERROR");

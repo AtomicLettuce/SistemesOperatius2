@@ -37,7 +37,8 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     SB.posUltimoBloqueDatos = nbloques - 1;
     SB.posInodoRaiz = 0;
     SB.posPrimerInodoLibre = 0;
-    SB.cantBloquesLibres = ninodos;
+    SB.cantBloquesLibres = nbloques;
+    SB.cantInodosLibres = ninodos;
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
