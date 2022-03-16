@@ -64,7 +64,8 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     SB.posUltimoBloqueDatos = nbloques - 1;
     SB.posInodoRaiz = 0;
     SB.posPrimerInodoLibre = 0;
-    SB.cantBloquesLibres = ninodos;
+    SB.cantBloquesLibres = nbloques;
+    SB.cantInodosLibres = ninodos;
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
@@ -376,9 +377,47 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
         perror("Error");
         return ERROR;
     }
+    int bloque = ninodo*BLOCKSIZE/INODOSIZE;
+
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    if (bread(bloque, inodos) == ERROR)
+        {
+            perror("Error");
+            return ERROR;
+        }
+    if (bwrite((ninodo%(BLOCKSIZE/INODOSIZE)), inodos) == ERROR)
+        {
+            perror("Error: ");
+            return ERROR;
+        }
+    if (bwrite(0, &SB) == ERROR)
+        {
+            perror("Error: ");
+            return ERROR;
+        }
+    return 0;
 }
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
+    struct superbloque SB;
+    if (bread(0, &SB) == ERROR)
+    {
+        perror("Error");
+        return ERROR;
+    }
+
+    int bloque = ninodo*BLOCKSIZE/INODOSIZE;
+
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    if (bread(bloque, inodos) == ERROR)
+        {
+            perror("Error");
+            return ERROR;
+        }
+    inodo = inodos[(ninodo%(BLOCKSIZE/INODOSIZE))];
+    return 0;
 }
 int reservar_inodo(unsigned char tipo, unsigned char permisos)
 {
@@ -427,14 +466,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         // Escribimos el inodo en el AI
         if (escribir_inodo(posInodoReservado, reservado) == ERROR)
         {
-            perror("ERROR: ");
+            perror("Error: ");
             return ERROR;
         }
 
         // Lo escribimos en el disco
         if (bwrite(0, &SB) == ERROR)
         {
-            perror("ERROR: ");
+            perror("Error: ");
             return ERROR;
         }
         // Retornamos la posición del inodo que acabamos de reservar

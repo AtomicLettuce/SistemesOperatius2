@@ -17,7 +17,12 @@ int main(int argc, char **argv)
             {
                 bwrite(i,buf);
             }
-            bumount(fd);
+            initSB(nbloques, nbloques/4);
+            initMB();
+            initAI();
+            if(bumount() == -1){
+                perror("ERROR");
+            }
         }
     }else{
         perror("ERROR");
