@@ -12,6 +12,9 @@ int main(int argc, char **argv){
         return -1;
     }
     if(bread(0,&SB) != -1){
+
+        //mostrar el superbloque
+
         printf("DATOS DEL SUPERBLOQUE\n");
         printf("posPrimerBloqueMB: %u\n",SB.posPrimerBloqueMB);
         printf("posUltimoBloqueMB: %u\n",SB.posUltimoBloqueMB);
@@ -28,8 +31,47 @@ int main(int argc, char **argv){
         printf("sizeof struc superbloque: %lu\n",sizeof(struct superbloque));
         printf("sizeof struc inodo is: %lu\n",sizeof(struct inodo));
         printf("RESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS");
+
+
+        //mostrar el MB (y así comprobar el funcionamiento de escribir_bit() y leer_bit()).
         printf("MAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS")
-        
+        for(int i=0;i<SB.totBloques;i++){
+            printf("%u",leer_bit(i));
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }else{
         perror("ERROR");
         return -1;
