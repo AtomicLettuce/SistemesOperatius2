@@ -244,6 +244,7 @@ char leer_bit(unsigned int nbloque)
 // Print para el DEBUGGING. Perteneciente al debugging del nivel 3
 #if DEBUGN3
     printf("[leer_bit(%i)→ posbyte:%i, posbit:%i, nbloqueMB:%i, nbloqueabs:%i)]\n",nbloque,posbyte,posbit,nbloqueMB,nbloqueabs);
+    printf("leer_bit(%i) = %i",nbloque,mascara);
 #endif
 
 
