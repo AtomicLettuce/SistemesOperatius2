@@ -1,7 +1,5 @@
 #include "ficheros_basico.h"
-
-#define DEBUGN2 1
-#define DEBUGN3 1
+#include "debugging.h"
 
 int main(int argc, char **argv)
 {
