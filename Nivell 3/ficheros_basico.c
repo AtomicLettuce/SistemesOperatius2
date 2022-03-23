@@ -1,5 +1,7 @@
 #include "ficheros_basico.h"
 #define ERROR -1
+#define DEBUGN3 1
+
 
 int tamMB(unsigned int nbloques)
 {
@@ -237,6 +239,14 @@ char leer_bit(unsigned int nbloque)
     // Desplazamos para obtener resultado
     mascara >>= (7 - posbit);
 
+
+
+// Print para el DEBUGGING. Perteneciente al debugging del nivel 3
+#if DEBUGN3
+    printf("[leer_bit(%i)→ posbyte:%i, posbit:%i, nbloqueMB:%i, nbloqueabs:%i)]\n",nbloque,posbyte,posbit,nbloqueMB,nbloqueabs);
+#endif
+
+
     // Devolvemos el resultado
     return mascara;
 }
@@ -327,7 +337,6 @@ int reservar_bloque()
                     perror("ERROR :");
                     return ERROR;
                 }
-
                 // Devolvemos el nº de bloque que hemos reservado
                 return nbloque;
             }
