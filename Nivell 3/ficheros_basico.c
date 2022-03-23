@@ -1,6 +1,6 @@
+#include "debugging.h"
 #include "ficheros_basico.h"
 #define ERROR -1
-#define DEBUGN3 1
 
 
 int tamMB(unsigned int nbloques)
