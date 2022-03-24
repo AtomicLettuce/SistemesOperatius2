@@ -414,16 +414,16 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo)
         return ERROR;
     }
 
-    int bloque = ninodo*BLOCKSIZE/INODOSIZE;
+    int bloque = ninodo * BLOCKSIZE / INODOSIZE;
 
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
     if (bread(bloque, inodos) == ERROR)
-        {
-            perror("Error");
-            return ERROR;
-        }
-    inodo = &inodos[(ninodo%(BLOCKSIZE/INODOSIZE))];
+    {
+        perror("Error");
+        return ERROR;
+    }
+    inodo = &inodos[(ninodo % (BLOCKSIZE / INODOSIZE))];
     return 0;
 }
 int reservar_inodo(unsigned char tipo, unsigned char permisos)
@@ -442,7 +442,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         int posInodoReservado = SB.posPrimerInodoLibre;
 
         // Leemos el primer inodo libre
-        struct inodo *reservado=malloc(sizeof(struct inodo));
+        struct inodo *reservado = malloc(sizeof(struct inodo));
 
         // Modificamos los datos del inodo
         reservado->tipo = tipo;
@@ -455,8 +455,8 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         reservado->numBloquesOcupados = 0;
 
         // Actualizamos el SB
-        SB.posPrimerInodoLibre=reservado->punterosDirectos[0];// Actualizamos para que el SB ahora apunte al NUEVO primer nodo libre
-        SB.cantInodosLibres--; // Puesto que reservamos uno
+        SB.posPrimerInodoLibre = reservado->punterosDirectos[0]; // Actualizamos para que el SB ahora apunte al NUEVO primer nodo libre
+        SB.cantInodosLibres--;                                   // Puesto que reservamos uno
 
         // *****Lo escribiremos en el disco un poco más adelante *****
 
@@ -493,8 +493,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         printf("No quedan inodos libres\n");
         return ERROR;
     }
-
-
 }
 
 // NIVEL 4
@@ -529,7 +527,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
             if (reservar == 0)
             {
-
                 // bloque inexistente -> no imprimir nada por pantalla!!!
                 perror("Error: ");
                 return ERROR;
@@ -548,19 +545,17 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 {
 
                     // el bloque cuelga directamente del inodo
-                    printf("ptr: %i\n",ptr);
-                    inodo.punterosIndirectos[nRangoBL - 1] = ptr;// (imprimirlo para test)
-
+                    inodo.punterosIndirectos[nRangoBL - 1] = ptr; // (imprimirlo para test)
+                    printf("[traducir_bloque_inodo() → inodo.punterosIndirectos[%d]: %d ]\n", nRangoBL - 1, ptr);
                 }
                 else
                 {
 
                     // el bloque cuelga de otro bloque de punteros
-                    printf("ptr: %i\n",ptr);
                     buffer[indice] = ptr; // (imprimirlo para test)
 
                     // salvamos en el dispositivo el buffer de punteros modificado
-
+                    printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d ]\n", nivel_punteros, indice, ptr);
                     if (bwrite(ptr_ant, buffer) == -1)
                     {
 
@@ -594,12 +589,11 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     // no existe bloque de datos
     if (ptr == 0)
     {
-        
 
         if (reservar == 0)
         {
 
-            //error lectura ∄ bloque
+            // error lectura ∄ bloque
             perror("Error: ");
             return ERROR;
         }
@@ -614,16 +608,16 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
             if (nRangoBL == 0)
             {
-                printf("ptr: %i\n",ptr);
                 inodo.punterosDirectos[nblogico] = ptr; // (imprimirlo para test)
+                printf("[traducir_bloque_inodo() → inodo.punterosDirectos[%d] =  %d ]\n", nblogico, ptr);
             }
             else
             {
                 // asignamos la dirección del bloque de datos (imprimirlo para test)
-                printf("ptr: %i\n",ptr);
                 buffer[indice] = ptr;
-                
-                //salvamos en el dispositivo el buffer de punteros modificado 
+                printf("traducir_bloque_inodo() → punteros_nivel%d[%d] = %d ]\n", nivel_punteros, indice, ptr);
+
+                // salvamos en el dispositivo el buffer de punteros modificado
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
 
@@ -636,10 +630,9 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
     if (salvar_inodo == 1)
     {
-
         escribir_inodo(ninodo, &inodo); // sólo si lo hemos actualizado
     }
 
-    //nº de bloque físico correspondiente al bloque de datos lógico, nblogico
+    // nº de bloque físico correspondiente al bloque de datos lógico, nblogico
     return ptr;
 }
