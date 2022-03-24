@@ -427,7 +427,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo)
             perror("Error");
             return ERROR;
         }
-    inodo = inodos[(ninodo%(BLOCKSIZE/INODOSIZE))];
+    inodo = &inodos[(ninodo%(BLOCKSIZE/INODOSIZE))];
     return 0;
 }
 int reservar_inodo(unsigned char tipo, unsigned char permisos)
@@ -446,7 +446,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         int posInodoReservado = SB.posPrimerInodoLibre;
 
         // Leemos el primer inodo libre
-        struct inodo *reservado;
+        struct inodo *reservado=malloc(sizeof(struct inodo));
 
         // Modificamos los datos del inodo
         reservado->tipo = tipo;
