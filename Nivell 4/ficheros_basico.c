@@ -496,6 +496,55 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
 }
 
 // NIVEL 4
+int obtener_nRangoBL(struct inodo *inodo, unsigned int nblogico, unsigned int *ptr){
+    if(nblogico < DIRECTOS){
+        *ptr = inodo->punterosDirectos[nblogico];
+        return 0;
+    }
+    if(nblogico < INDIRECTOS0){
+        *prt = inodo->punterosIndirectos[0];
+        return 1;
+    }
+    if(nblogico < INDIRECTOS1){
+        *ptr = inodo->punterosIndirectos[1];
+        return 2;
+    }
+    if(nblogico < INDIRECTOS2){
+        *ptr = inodo->punterosIndirectos[2];
+        return 3;
+    }
+    *ptr = 0;
+    perror("Error:");
+    return ERROR;
+}
+
+int obtener_indice(unsigned int nblogico, int nivel_punteros){
+    if(nblogico < DIRECTOS){
+        return nblogico;
+    } 
+    if(nblogico < INDIRECTOS0){
+        return nblogico - DIRECTOS;
+    }
+    if(nblogico < INDIRECTOS1){
+        if(nivel_punteros == 2){
+            return (nblogico - INDIRECTOS0) / NPUNTEROS;
+        }
+        if(nivel_punteros == 1){
+            return (nblogico - INDIRECTOS0) % NPUNTEROS;
+        }
+    }
+    if(nblogico < INDIRECTOS2){
+        if(nivel_punteros == 3){
+            return (nblogico - INDIRECTOS1) / (NPUNTEROS * NPUNTEROS);
+        }
+        if(nivel_punteros == 2){
+            return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS) / NPUNTEROS);
+        }
+        if(nivel_punteros == 1){
+            return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS) % NPUNTEROS);
+        }
+    }
+}
 
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar)
 {
@@ -514,7 +563,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
     ptr = ptr_ant = salvar_inodo = 0;
 
-    nRangoBL = obtener_nrangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
+    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
 
     nivel_punteros = nRangoBL; // el nivel_punteros +alto es el que cuelga del inodo
 
