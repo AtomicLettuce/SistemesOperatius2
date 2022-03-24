@@ -508,10 +508,10 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     {
 
         perror("Error: ");
-        return -1;
+        return ERROR;
     }
 
-    ptr = 0, ptr_ant = 0, salvar_inodo = 0;
+    ptr = ptr_ant = salvar_inodo = 0;
 
     nRangoBL = obtener_nrangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
 
@@ -529,7 +529,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
                 // bloque inexistente -> no imprimir nada por pantalla!!!
                 perror("Error: ");
-                return -1;
+                return ERROR;
             }
             else
             {
@@ -545,13 +545,15 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 {
 
                     // el bloque cuelga directamente del inodo
+                    printf("ptr: %i\n",ptr);
+                    inodo.punterosIndirectos[nRangoBL - 1] = ptr;// (imprimirlo para test)
 
-                    inodo.punterosIndirectos[nRangoBL - 1] : = ptr // (imprimirlo para test)
                 }
                 else
                 {
 
                     // el bloque cuelga de otro bloque de punteros
+                    printf("ptr: %i\n",ptr);
                     buffer[indice] = ptr; // (imprimirlo para test)
 
                     // salvamos en el dispositivo el buffer de punteros modificado
@@ -560,7 +562,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                     {
 
                         perror("Error: ");
-                        return -1;
+                        return ERROR;
                     }
                 }
 
@@ -575,7 +577,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             {
 
                 perror("Error: ");
-                return -1;
+                return ERROR;
             }
         }
 
@@ -586,16 +588,17 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     }
     // al salir de este bucle ya estamos al nivel de datos
 
+    // no existe bloque de datos
     if (ptr == 0)
     {
-        // no existe bloque de datos
+        
 
         if (reservar == 0)
         {
 
-            // bloque inexistente -> no imprimir nada por pantalla!!!
+            //error lectura ∄ bloque
             perror("Error: ");
-            return -1;
+            return ERROR;
         }
         else
         {
@@ -608,19 +611,21 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
             if (nRangoBL == 0)
             {
-
-                inodo.punterosDirectos[nblogico] == ptr; // (imprimirlo para test)
+                printf("ptr: %i\n",ptr);
+                inodo.punterosDirectos[nblogico] = ptr; // (imprimirlo para test)
             }
             else
             {
-
+                // asignamos la dirección del bloque de datos (imprimirlo para test)
+                printf("ptr: %i\n",ptr);
                 buffer[indice] = ptr;
-
+                
+                //salvamos en el dispositivo el buffer de punteros modificado 
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
 
                     perror("Error: ");
-                    return -1;
+                    return ERROR;
                 }
             }
         }
@@ -632,5 +637,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
         escribir_inodo(ninodo, inodo); // sólo si lo hemos actualizado
     }
 
+    //nº de bloque físico correspondiente al bloque de datos lógico, nblogico
     return ptr;
 }
