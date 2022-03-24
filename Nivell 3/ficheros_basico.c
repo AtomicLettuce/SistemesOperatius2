@@ -283,7 +283,7 @@ int reservar_bloque()
         unsigned int nbloqueabs = SB.posPrimerBloqueMB;
 
         // Recorremos el MB hasta encontrar localizar el 1er bloque libre iterando con nbloqueabs
-        for (nbloqueabs; nbloqueabs <= SB.posUltimoBloqueMB && primerlibre == 0; nbloqueabs++)
+        for (; nbloqueabs <= SB.posUltimoBloqueMB && primerlibre == 0; nbloqueabs++)
         {
 
             // Cargamos el bloque en el bufferMB
@@ -349,6 +349,8 @@ int reservar_bloque()
         // No quedan bloques libres en el dispositivo
         return ERROR;
     }
+
+    return ERROR;
 }
 // La función liberar_que libera un bloque determinado por nbloque. uep
 int liberar_bloque(unsigned int nbloque)
@@ -495,4 +497,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         printf("No quedan inodos libres\n");
         return ERROR;
     }
+
+
 }
