@@ -5,10 +5,10 @@ int main(int argc, char **argv)
 {
     struct superbloque SB;
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
-
-    if (argc == 2)
+    char *camino = argv[1];
+    if (argc != 2)
     {
-        char *camino = argv[1];
+        printf("ERROR: ");
     }
     if (bmount(camino) == -1)
     {
@@ -17,8 +17,8 @@ int main(int argc, char **argv)
     if (bread(0, &SB) != -1)
     {
         printf("DATOS DEL SUPERBLOQUE\n");
-        printf("posPrimerBloqueMB: %u\n", SB.posPrimerBloqueMB);
-        printf("posUltimoBloqueMB: %u\n", SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueMB: %d\n", SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB: %d\n", SB.posUltimoBloqueMB);
         printf("posPrimerBloqueAI: %u\n", SB.posPrimerBloqueAI);
         printf("posUltimoBloqueMB: %u\n", SB.posUltimoBloqueAI);
         printf("posPrimerBloqueDatos: %u\n", SB.posPrimerBloqueDatos);
@@ -31,6 +31,7 @@ int main(int argc, char **argv)
         printf("totInodos: %u\n\n", SB.totInodos);
         printf("sizeof struc superbloque: %lu\n", sizeof(struct superbloque));
         printf("sizeof struc inodo is: %lu\n", sizeof(struct inodo));
+
         printf("RESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS");
         printf("MAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS")
 #if DEBUGN2
@@ -69,25 +70,7 @@ int main(int argc, char **argv)
     printf("INODO 1. TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 468.750\n");
 #if DEBUGN4
 
-
-
-
-
-
-
-
-
-
 #endif
-
-
-
-
-
-
-
-
-
 }
 else
 {
