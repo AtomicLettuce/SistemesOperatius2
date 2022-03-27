@@ -378,27 +378,29 @@ int liberar_bloque(unsigned int nbloque)
 }
 int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
 {
+    
+    // Leemos el sjuperbloque
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
         perror("Error");
         return ERROR;
     }
-    int bloque = ninodo * BLOCKSIZE / INODOSIZE;
+    // Calculamos el numero de bloque absoluto que le corresponde al inodo que queremos escribir
+    int bloqueabs = ninodo((ninodo * INODOSIZE) / BLOCKSIZE) + SB.posPrimerBloqueAI;
 
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
-    if (bread(bloque, inodos) == ERROR)
+    // Leemos el bloque en el que está el inodo
+    if (bread(bloqueabs, inodos) == ERROR)
     {
         perror("Error");
         return ERROR;
     }
+    // Sustituimos el inodo antiguo por el que queremos escribir
+    inodos[ninodo % (BLOCKSIZE / INODOSIZE)] = inodo;
+    // Los escribimos en el dispositivo
     if (bwrite((ninodo % (BLOCKSIZE / INODOSIZE)), inodos) == ERROR)
-    {
-        perror("Error: ");
-        return ERROR;
-    }
-    if (bwrite(0, &SB) == ERROR)
     {
         perror("Error: ");
         return ERROR;
@@ -407,6 +409,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
 }
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
+    s
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
@@ -414,16 +417,18 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo)
         return ERROR;
     }
 
-    int bloque = ninodo * BLOCKSIZE / INODOSIZE;
+    unsigned int numBloque = ((ninodo * INODOSIZE) / BLOCKSIZE) + SB.posPrimerBloqueAI;
 
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
-    if (bread(bloque, inodos) == ERROR)
+    if (bread(numBloque, inodos) == ERROR)
     {
-        perror("Error");
+        // Error en la lectura.
+        perror("ERROR: ");
         return ERROR;
     }
-    inodo = &inodos[(ninodo % (BLOCKSIZE / INODOSIZE))];
+    // Ponemos el inodo solicitado en el puntero pasado por parámetro
+    *inodo = inodos[ninodo % (BLOCKSIZE / INODOSIZE)];
     return 0;
 }
 int reservar_inodo(unsigned char tipo, unsigned char permisos)
@@ -435,7 +440,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         perror("Error");
         return ERROR;
     }
-
     if (SB.cantInodosLibres > 0)
     {
         // Nos guardamos la posición del inodo que reservamos (tendrá su utilidad más adelante)
@@ -443,7 +447,10 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
 
         // Leemos el primer inodo libre
         struct inodo *reservado = malloc(sizeof(struct inodo));
-
+        if (leer_inodo(posInodoReservado, reservado) == ERROR)
+        {
+            perror("ERROR: ");
+        }
         // Modificamos los datos del inodo
         reservado->tipo = tipo;
         reservado->permisos = permisos;
@@ -496,20 +503,25 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
 }
 
 // NIVEL 4
-int obtener_nRangoBL(struct inodo *inodo, unsigned int nblogico, unsigned int *ptr){
-    if(nblogico < DIRECTOS){
+int obtener_nRangoBL(struct inodo *inodo, unsigned int nblogico, unsigned int *ptr)
+{
+    if (nblogico < DIRECTOS)
+    {
         *ptr = inodo->punterosDirectos[nblogico];
         return 0;
     }
-    if(nblogico < INDIRECTOS0){
+    if (nblogico < INDIRECTOS0)
+    {
         *prt = inodo->punterosIndirectos[0];
         return 1;
     }
-    if(nblogico < INDIRECTOS1){
+    if (nblogico < INDIRECTOS1)
+    {
         *ptr = inodo->punterosIndirectos[1];
         return 2;
     }
-    if(nblogico < INDIRECTOS2){
+    if (nblogico < INDIRECTOS2)
+    {
         *ptr = inodo->punterosIndirectos[2];
         return 3;
     }
@@ -518,29 +530,39 @@ int obtener_nRangoBL(struct inodo *inodo, unsigned int nblogico, unsigned int *p
     return ERROR;
 }
 
-int obtener_indice(unsigned int nblogico, int nivel_punteros){
-    if(nblogico < DIRECTOS){
+int obtener_indice(unsigned int nblogico, int nivel_punteros)
+{
+    if (nblogico < DIRECTOS)
+    {
         return nblogico;
-    } 
-    if(nblogico < INDIRECTOS0){
+    }
+    if (nblogico < INDIRECTOS0)
+    {
         return nblogico - DIRECTOS;
     }
-    if(nblogico < INDIRECTOS1){
-        if(nivel_punteros == 2){
+    if (nblogico < INDIRECTOS1)
+    {
+        if (nivel_punteros == 2)
+        {
             return (nblogico - INDIRECTOS0) / NPUNTEROS;
         }
-        if(nivel_punteros == 1){
+        if (nivel_punteros == 1)
+        {
             return (nblogico - INDIRECTOS0) % NPUNTEROS;
         }
     }
-    if(nblogico < INDIRECTOS2){
-        if(nivel_punteros == 3){
+    if (nblogico < INDIRECTOS2)
+    {
+        if (nivel_punteros == 3)
+        {
             return (nblogico - INDIRECTOS1) / (NPUNTEROS * NPUNTEROS);
         }
-        if(nivel_punteros == 2){
+        if (nivel_punteros == 2)
+        {
             return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS) / NPUNTEROS);
         }
-        if(nivel_punteros == 1){
+        if (nivel_punteros == 1)
+        {
             return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS) % NPUNTEROS);
         }
     }

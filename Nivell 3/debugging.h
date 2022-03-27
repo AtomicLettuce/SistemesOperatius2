@@ -1,5 +1,5 @@
 #define DEBUGN2 0
-#define DEBUGN3 0
+#define DEBUGN3 1
 #define DEBUGN4 1
 #define DEBUGN5 1
 #define DEBUGN6 1

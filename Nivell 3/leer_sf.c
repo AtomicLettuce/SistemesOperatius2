@@ -4,11 +4,11 @@
 int main(int argc, char **argv)
 {
     struct superbloque SB;
-    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+    char *camino = argv[1];
 
-    if (argc == 2)
+    if (argc != 2)
     {
-        char *camino = argv[1];
+        printf("ERROR: ");
     }
     if (bmount(camino) == -1)
     {
@@ -32,10 +32,11 @@ int main(int argc, char **argv)
         printf("cantInodosLibres: %u\n", SB.cantInodosLibres);
         printf("totBloques: %u\n", SB.totBloques);
         printf("totInodos: %u\n\n", SB.totInodos);
-        printf("sizeof struc superbloque: %lu\n", sizeof(struct superbloque));
-        printf("sizeof struc inodo is: %lu\n", sizeof(struct inodo));
 
 #if DEBUGN2
+        printf("sizeof struc superbloque: %lu\n", sizeof(struct superbloque));
+        printf("sizeof struc inodo is: %lu\n", sizeof(struct inodo));
+        struct inodo inodos[BLOCKSIZE / INODOSIZE];
         for (int i = SB.posPrimerInodoLibre; i < SB.cantInodosLibres; i++)
         {
             if (i % (BLOCKSIZE / INODOSIZE) == 0)
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
                     return -1;
                 }
             }
-            printf("%d", inodos[i % (BLOCKSIZE / INODOSIZE)].punterosDirectos[0]);
+            printf("%d ", inodos[i % (BLOCKSIZE / INODOSIZE)].punterosDirectos[0]);
         }
 #endif
 
@@ -54,23 +55,22 @@ int main(int argc, char **argv)
         printf("RESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
         int nbloque = reservar_bloque();
         printf("Se ha reservado el bloque físico nº %i que era el %iº libre indicado por el MB\n", nbloque,
-               ((SB.posPrimerBloqueDatos - nbloque) + 1));
+               ((nbloque - SB.posPrimerBloqueDatos) + 1));
 
-        printf("SB.cantBloquesLibres = %i\n",SB.cantBloquesLibres);
-
+        printf("SB.cantBloquesLibres = %i\n", SB.cantBloquesLibres);
 
         liberar_bloque(nbloque);
-        printf("Liberamos ese bloque y después SB.cantBloquesLibres = %i\n",SB.cantBloquesLibres);
-                       
+        printf("Liberamos ese bloque y después SB.cantBloquesLibres = %i\n", SB.cantBloquesLibres);
 
         // mostrar el MB (y así comprobar el funcionamiento de escribir_bit() y leer_bit()).
-        printf("MAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS\n") for (int i = 0; i < SB.totBloques; i++)
+        printf("MAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS\n");
+        for (int i = 0; i < SB.totBloques; i++)
         {
             printf("%u", leer_bit(i));
         }
-    }
-#endif
 
+#endif
+    }
     else
     {
         perror("ERROR");
