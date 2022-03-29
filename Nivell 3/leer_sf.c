@@ -66,7 +66,7 @@ int main(int argc, char **argv)
         printf("MAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS\n");
         for (int i = 0; i < SB.totBloques; i++)
         {
-            printf("%u", leer_bit(i));
+            printf("%u \n", leer_bit(i));
         }
 
 #endif
