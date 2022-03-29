@@ -387,7 +387,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
         return ERROR;
     }
     // Calculamos el numero de bloque absoluto que le corresponde al inodo que queremos escribir
-    int bloqueabs = ninodo((ninodo * INODOSIZE) / BLOCKSIZE) + SB.posPrimerBloqueAI;
+    unsigned int bloqueabs = ((ninodo * INODOSIZE) / BLOCKSIZE) + SB.posPrimerBloqueAI;
 
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
@@ -398,7 +398,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
         return ERROR;
     }
     // Sustituimos el inodo antiguo por el que queremos escribir
-    inodos[ninodo % (BLOCKSIZE / INODOSIZE)] = inodo;
+    inodos[ninodo % (BLOCKSIZE / INODOSIZE)] = *inodo;
     // Los escribimos en el dispositivo
     if (bwrite((ninodo % (BLOCKSIZE / INODOSIZE)), inodos) == ERROR)
     {
@@ -409,7 +409,6 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
 }
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
-    s
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
