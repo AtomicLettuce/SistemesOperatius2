@@ -24,38 +24,39 @@ int tamAI(unsigned int ninodos)
 
 int initMB()
 {
+    struct superbloque SB;
     // Declaramos un búfer tan grande como un bloque
     unsigned char *buf = malloc(BLOCKSIZE);
     // Contenido de buffer = todo 0s
     memset(buf, 0, BLOCKSIZE);
 
-    // Leemos el superbloque
-    struct superbloque SB;
-    if (bread(0, &SB) == ERROR)
+    // Leemos el superbloque para obtener la localización del array de inodos.
+    if (bread(0, &SB) == -1)
     {
+
         perror("Error");
-        return ERROR;
+        return -1;
     }
 
     // Ponemos todo el MB a 0s
     for (int i = SB.posPrimerBloqueMB; i < SB.posUltimoBloqueMB; i++)
     {
-        if (bwrite(i, buf) == ERROR)
+        if (bwrite(i, buf) == -1)
         {
-            perror("ERROR");
-            return ERROR;
+            perror("Error");
+            return -1;
         }
     }
+    // Ponemos a 1 los bits pertenecientes a los metadatos (AI, SB y MB)
+    actualizarBitsMetadatosMB();
 
-    // DEMANAR QUE HEM DE RETORNAR !!!!!!!!!!!!
-    // I SI AIXO ES CORRECTE
     return 0;
 }
 
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
+    // Inicializamos el superbloque
     struct superbloque SB;
-
     SB.posPrimerBloqueMB = posSB + tamSB;
     SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
     SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
@@ -69,14 +70,102 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
-    bwrite(posSB, &SB);
+    if (bwrite(posSB, &SB) == ERROR)
+    {
+        perror("Error");
+        return ERROR;
+    }
+    return 0;
+}
+
+int actualizarBitsMetadatosMB()
+{
+    struct superbloque SB;
+    if (bread(posSB, &SB) == ERROR)
+    {
+        perror("ERROR: ");
+        return ERROR;
+    }
+
+    // Número total de bloques que ocupan los metadatos
+    int nBloquesTotalMetaDatos = tamAI(SB.totInodos) + tamMB(SB.totBloques) + tamSB;
+
+    // Número total de bloques ENTEROS que hay que poner a 1
+    int nBloquesMD = (nBloquesTotalMetaDatos / 8) / BLOCKSIZE;
+    
+    // Búfer que usaremos en seguida para escribir
+    unsigned char bufferMB[BLOCKSIZE];
+
+    // Escribimos los en el MB bloques enteros que correspondan a los metadatos
+    if (nBloquesMD > 0)
+    {
+        memset(bufferMB, 255, sizeof(bufferMB));
+        for (int i = SB.posPrimerBloqueMB; i < (SB.posPrimerBloqueMB + nBloquesMD); i++)
+        {
+            if (bwrite(i, bufferMB) == ERROR)
+            {
+                perror("ERROR: ");
+                return ERROR;
+            }
+        }
+    }
+    // Por ahora hemos escrito todos los bloques enteros que deben estar a 1, falta poner a 1 los que han caído
+    // entre y entre
+
+    // búfer auxiliar
+    unsigned char bufferAux[BLOCKSIZE];
+    // Total de bytes ENTEROS que hay que poner a 1
+    int nBytesMD = (nBloquesTotalMetaDatos / 8) % 1024;
+
+    // Total de bits que hay que poner a 1 (será un número del 0-7)
+    int nBitsMD = nBloquesTotalMetaDatos % 8;
+
+    // Ponemos a 1 los bytes
+    for (int i = 0; i < nBytesMD; i++)
+    {
+        bufferAux[i] = 255;
+    }
+    // Ponemos a 1 los bits
+    if (nBitsMD != 0)
+    {
+        // Dependiendo de cuántos bits haya que poner a 1 se seleccionará una máscara u otra
+        // 128 = 1000000
+        // 192 = 1100000
+        // 224 = 1110000
+        // ...
+        // 254 = 1111110
+
+        // Nótese que no se tiene en cuenta 225 porque entonces tendríamos que poner 8 bits a 1
+        // que es lo mismo que poner un byte a 1.
+        unsigned char mascaras[] = {128, 192, 224, 240, 248, 252, 254};
+        bufferAux[nBytesMD] = mascaras[nBitsMD - 1];
+    }
+    // Ponemos a 0 todos los otros bits
+    for (int i = nBytesMD + 1; i < BLOCKSIZE; i++)
+    {
+        bufferAux[i] = 0;
+    }
+    // Escribimos este último bloque en el MB
+    if (bwrite(SB.posPrimerBloqueMB + nBloquesMD, bufferAux) == ERROR)
+    {
+        perror("ERROR: ");
+        return ERROR;
+    }
+
+    // Actualizamos SB
+    SB.cantBloquesLibres = SB.cantBloquesLibres - nBloquesTotalMetaDatos;
+    if (bwrite(0, &SB) == ERROR)
+    {
+        perror("ERROR: ");
+        return ERROR;
+    }
+
     return 0;
 }
 
 // Esta función se encargará de inicializar la lista de inodos libres.
 int initAI()
 {
-
     // Buffer para ir recorriendo el array de inodos
     struct inodo inodos[BLOCKSIZE / INODOSIZE];
 
@@ -132,8 +221,6 @@ int initAI()
             return ERROR;
         }
     }
-
-    // Tornar 0?
     return 0;
 }
 
@@ -224,9 +311,11 @@ char leer_bit(unsigned int nbloque)
         perror("Error");
         return ERROR;
     }
-
-    // Calculamos el offset con respecto al bloque que hemos leído
-    posbyte = posbyte % BLOCKSIZE;
+#if DEBUGN3
+    printf("[leer_bit(%i)→ posbyte:%i, posbit:%i, nbloqueMB:%i, nbloqueabs:%i)]\n", nbloque, posbyte, posbit, nbloqueMB, nbloqueabs);
+#endif
+        // Calculamos el offset con respecto al bloque que hemos leído
+        posbyte = posbyte % BLOCKSIZE;
 
     // Declaramos la máscara
     unsigned char mascara = 128; // 10000000
@@ -240,8 +329,7 @@ char leer_bit(unsigned int nbloque)
 
 // Print para el DEBUGGING. Perteneciente al debugging del nivel 3
 #if DEBUGN3
-    printf("[leer_bit(%i)→ posbyte:%i, posbit:%i, nbloqueMB:%i, nbloqueabs:%i)]\n", nbloque, posbyte, posbit, nbloqueMB, nbloqueabs);
-    printf("leer_bit(%i) = %i", nbloque, mascara);
+    printf("leer_bit(%i) = %i\n", nbloque, mascara);
 #endif
 
     // Devolvemos el resultado
@@ -254,7 +342,6 @@ lo ocupa y devuelve su posición.
 */
 int reservar_bloque()
 {
-
     // Leemos el superbloque
     struct superbloque SB;
     if (bread(posSB, &SB) == ERROR)
@@ -378,7 +465,6 @@ int liberar_bloque(unsigned int nbloque)
 }
 int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
 {
-    
     // Leemos el sjuperbloque
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
