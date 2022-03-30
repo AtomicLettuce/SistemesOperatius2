@@ -1,6 +1,6 @@
 #include "ficheros_basico.h"
 #include "debugging.h"
-
+#define ERROR -1
 int main(int argc, char **argv)
 {
     struct superbloque SB;
@@ -10,11 +10,11 @@ int main(int argc, char **argv)
     {
         printf("ERROR: ");
     }
-    if (bmount(camino) == -1)
+    if (bmount(camino) == ERROR)
     {
-        return -1;
+        return ERROR;
     }
-    if (bread(0, &SB) != -1)
+    if (bread(0, &SB) != ERROR)
     {
 
         // mostrar el superbloque
@@ -41,10 +41,10 @@ int main(int argc, char **argv)
         {
             if (i % (BLOCKSIZE / INODOSIZE) == 0)
             {
-                if (bread(SB.posPrimerBloqueAI + i / (BLOCKSIZE / INODOSIZE), inodos) == -1)
+                if (bread(SB.posPrimerBloqueAI + i / (BLOCKSIZE / INODOSIZE), inodos) == ERROR)
                 {
                     perror("ERROR: ");
-                    return -1;
+                    return ERROR;
                 }
             }
             printf("%d ", inodos[i % (BLOCKSIZE / INODOSIZE)].punterosDirectos[0]);
@@ -71,10 +71,18 @@ int main(int argc, char **argv)
 
 #endif
     }
+    
     else
     {
         perror("ERROR");
-        return -1;
+        return ERROR;
     }
+ if (bumount() == ERROR)
+    {
+        return ERROR;
+    }
+
     return 0;
+
+
 }
