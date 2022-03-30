@@ -62,9 +62,9 @@ int main(int argc, char **argv)
         }
 
         printf("Se ha reservado el bloque físico nº %i que era el %iº libre indicado por el MB\n", nbloque,
-               ((nbloque - SB.posPrimerBloqueDatos)));
+               ((nbloque - SB.posPrimerBloqueDatos) + 1));
 
-        printf("SB.cantBloquesLibres = %i\n",SB.cantBloquesLibres);
+        printf("SB.cantBloquesLibres = %i\n", SB.cantBloquesLibres);
         if (liberar_bloque(nbloque) == ERROR)
         {
             perror("ERROR: ");
@@ -84,6 +84,27 @@ int main(int argc, char **argv)
             leer_bit(i);
         }
 
+        // Imprimir los datos del directorio raíz
+        struct tm *ts;
+        char atime[80];
+        char mtime[80];
+        char ctime[80];
+        struct inodo dirRaiz;
+        leer_inodo(SB.posInodoRaiz, &dirRaiz);
+
+        printf("\n\nDATOS DEL DIRECTORIO RAIZ\n");
+        printf("tipo: %c\n", dirRaiz.tipo);
+        printf("permisos: %u\n", dirRaiz.permisos);
+        ts = localtime(&dirRaiz.atime);
+        strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+        ts = localtime(&dirRaiz.mtime);
+        strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+        ts = localtime(&dirRaiz.ctime);
+        strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+        printf("ID: %d ATIME: %s MTIME: %s CTIME: %s\n", SB.posInodoRaiz, atime, mtime, ctime);
+        printf("nlinks: %u\n", dirRaiz.nlinks);
+        printf("tamEnBytesLog: %u\n", dirRaiz.tamEnBytesLog);
+        printf("numBloquesOcupados: %u\n", dirRaiz.numBloquesOcupados);
 #endif
     }
     else

@@ -92,7 +92,7 @@ int actualizarBitsMetadatosMB()
 
     // Número total de bloques ENTEROS que hay que poner a 1
     int nBloquesMD = (nBloquesTotalMetaDatos / 8) / BLOCKSIZE;
-    
+
     // Búfer que usaremos en seguida para escribir
     unsigned char bufferMB[BLOCKSIZE];
 
@@ -314,8 +314,8 @@ char leer_bit(unsigned int nbloque)
 #if DEBUGN3
     printf("[leer_bit(%i)→ posbyte:%i, posbit:%i, nbloqueMB:%i, nbloqueabs:%i)]\n", nbloque, posbyte, posbit, nbloqueMB, nbloqueabs);
 #endif
-        // Calculamos el offset con respecto al bloque que hemos leído
-        posbyte = posbyte % BLOCKSIZE;
+    // Calculamos el offset con respecto al bloque que hemos leído
+    posbyte = posbyte % BLOCKSIZE;
 
     // Declaramos la máscara
     unsigned char mascara = 128; // 10000000
@@ -342,98 +342,94 @@ lo ocupa y devuelve su posición.
 */
 int reservar_bloque()
 {
-    // Leemos el superbloque
+    // Obtenemos el superbloque
     struct superbloque SB;
     if (bread(posSB, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
-
-    // Si quedan bloques libres en el dispositivo
+    // CASO EN EL QUE QUEDAN BLOQUES LIBRES
     if (SB.cantBloquesLibres > 0)
     {
+        // Búferes que usaremos para comprobar cuál es el primer bloque libre
+        unsigned char bufferMB[BLOCKSIZE];
+        unsigned char bufferAux[BLOCKSIZE];
+        memset(bufferAux, 255, sizeof(bufferAux));
 
-        unsigned char bufferMB[BLOCKSIZE]; // Buffer para leer el MB
-        memset(bufferMB, 0, BLOCKSIZE);
-
-        unsigned char bufferAux[BLOCKSIZE]; // Buffer auxiliar
-        memset(bufferAux, 255, BLOCKSIZE);
-
-        // Variable para detectar el primer bit a 0;
-        int primerlibre = 0;
-
-        unsigned int nbloqueabs = SB.posPrimerBloqueMB;
-
-        // Recorremos el MB hasta encontrar localizar el 1er bloque libre iterando con nbloqueabs
-        for (; nbloqueabs <= SB.posUltimoBloqueMB && primerlibre == 0; nbloqueabs++)
+        // Comprobamos todos los bloques pertenecientes al MB
+        int posBloqueMB = SB.posPrimerBloqueMB;
+        for (;; posBloqueMB++)
         {
-
-            // Cargamos el bloque en el bufferMB
-            if (bread(nbloqueabs, bufferMB) == ERROR)
+            // Leemos un bloque del MB
+            if (bread(posBloqueMB, bufferMB) == ERROR)
             {
-                perror("Error");
+                perror("ERROR: ");
                 return ERROR;
             }
-
-            // Si el bloque del bufferMB tiene uno o más bits a 0 --> primerlibre != 0;
-            primerlibre = memcmp(bufferMB, bufferAux, BLOCKSIZE);
-        }
-
-        unsigned char mascara = 128; // 10000000
-        int posbit = 0;
-
-        // Recorremos los bytes del bloque para localizar el byte con el bit a 0
-        for (int posbyte = 0; posbyte < BLOCKSIZE; posbyte++)
-        {
-
-            // Detectamos el byte con el bit a 0
-            if (bufferMB[posbyte] < 255)
+            // Comprobamos si hay algun bit a 0
+            if (memcmp(bufferMB, bufferAux, sizeof(bufferAux)) < 0)
             {
-
-                // Buscamos la posición del bit a 0
-                while (bufferMB[posbyte] & mascara)
-                {                            // operador AND para bits
-                    bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
-                    posbit++;
-                }
-
-                int nbloque = ((nbloqueabs - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
-
-                // Indicamos que el bloque està reservado
-                escribir_bit(nbloque, 1);
-
-                // Decrementamos la cantidad de bloques libres del SB
-                SB.cantBloquesLibres = SB.cantBloquesLibres - 1;
-
-                // Actualizamos el SB
-                if (bwrite(posSB, &SB) == ERROR)
-                {
-                    perror("Error");
-                    return ERROR;
-                }
-
-                // Limpiamos el bloque
-                unsigned char bufferVacio[BLOCKSIZE];
-                memset(bufferVacio, 0, BLOCKSIZE);
-                if (bwrite(nbloque, &bufferVacio) == ERROR)
-                {
-                    perror("ERROR :");
-                    return ERROR;
-                }
-                // Devolvemos el nº de bloque que hemos reservado
-                return nbloque;
+                // Si ya hemos encontrado el primer bit a 0, forzamos la salida del bucle for
+                break;
             }
         }
+
+        // Busamos el primer byte que tenga un 0
+        int posbyte = 0;
+        for (;; posbyte++)
+        {
+            if (bufferMB[posbyte] < 255)
+            {
+                // Si ya lo hemos encontrado, fuerza la salida del bucle for
+                break;
+            }
+        }
+
+        // Ahora ya tenemos el byte que tiene un 0 en alguna de sus posiciones. Falta saber en cuál de ellas es
+        unsigned char mascara = 128;
+        int posbit = 0;
+
+        // Encontramos en cuál de las posiciones del byte está un 0
+        while (bufferMB[posbyte] & mascara)
+        {
+            bufferMB[posbyte] <<= 1;
+
+            posbit++;
+        }
+        // Ya sabemos cuál es el primer bit a 0
+
+
+        // Obtenemos el número de bloque que representa este bit 
+        unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+
+        // Lo marcamos como reservado
+        escribir_bit(nbloque, 1);
+
+        // Actualizamos el SB
+        SB.cantBloquesLibres--;
+        if (bwrite(posSB, &SB) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+
+        // Limpiamos el bloque
+        unsigned char bufBloque[BLOCKSIZE];
+        memset(bufBloque, 0, BLOCKSIZE);
+        if (bwrite(nbloque, &bufBloque) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+        return nbloque;
     }
+
+    // CASO EN EL QUE NO QUEDAN BLOQUES LIBRES
     else
     {
-
-        // No quedan bloques libres en el dispositivo
         return ERROR;
     }
-
-    return ERROR;
 }
 // La función liberar_que libera un bloque determinado por nbloque. uep
 int liberar_bloque(unsigned int nbloque)
@@ -486,13 +482,15 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
     // Sustituimos el inodo antiguo por el que queremos escribir
     inodos[ninodo % (BLOCKSIZE / INODOSIZE)] = *inodo;
     // Los escribimos en el dispositivo
-    if (bwrite((ninodo % (BLOCKSIZE / INODOSIZE)), inodos) == ERROR)
+    if (bwrite(bloqueabs, &inodos) == ERROR)
     {
         perror("Error: ");
         return ERROR;
     }
     return 0;
 }
+
+
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
     struct superbloque SB;
@@ -561,7 +559,6 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
         {
             reservado->punterosIndirectos[i] = 0;
         }
-
         // Escribimos el inodo en el AI
         if (escribir_inodo(posInodoReservado, reservado) == ERROR)
         {
