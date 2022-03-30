@@ -1,10 +1,16 @@
 #include "ficheros_basico.h"
 #include "debugging.h"
 #define ERROR -1
+
 int main(int argc, char **argv)
 {
     struct superbloque SB;
     char *camino = argv[1];
+
+    struct tm *ts;
+    char atime[80];
+    char mtime[80];
+    char ctime[80];
 
     if (argc != 2)
     {
@@ -85,10 +91,6 @@ int main(int argc, char **argv)
         }
 
         // Imprimir los datos del directorio raíz
-        struct tm *ts;
-        char atime[80];
-        char mtime[80];
-        char ctime[80];
         struct inodo dirRaiz;
         leer_inodo(SB.posInodoRaiz, &dirRaiz);
 
@@ -105,6 +107,44 @@ int main(int argc, char **argv)
         printf("nlinks: %u\n", dirRaiz.nlinks);
         printf("tamEnBytesLog: %u\n", dirRaiz.tamEnBytesLog);
         printf("numBloquesOcupados: %u\n", dirRaiz.numBloquesOcupados);
+#endif
+
+#if DEBUGN4
+        struct inodo inodoN4;
+        unsigned int ninodoN4 = reservar_inodo('f', 6);
+
+        if (ninodoN4 < 0)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+        if (leer_inodo(ninodoN4, &inodoN4) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+
+        printf("INODO %u. TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 Y 468.750\n", ninodoN4);
+        traducir_bloque_inodo(ninodoN4, 8, 1);
+        traducir_bloque_inodo(ninodoN4, 204, 1);
+        traducir_bloque_inodo(ninodoN4, 30004, 1);
+        traducir_bloque_inodo(ninodoN4, 400004, 1);
+        traducir_bloque_inodo(ninodoN4, 468750, 1);
+
+        printf("\n\nDATOS DEL INODO RESERVADO %u\n", ninodoN4);
+        printf("tipo: %c\n", inodoN4.tipo);
+        printf("permisos: %u\n", inodoN4.permisos);
+        ts = localtime(&inodoN4.atime);
+        strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+        ts = localtime(&inodoN4.mtime);
+        strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+        ts = localtime(&inodoN4.ctime);
+        strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+        printf("ID: %d ATIME: %s MTIME: %s CTIME: %s\n", ninodoN4, atime, mtime, ctime);
+        printf("nlinks: %u\n", inodoN4.nlinks);
+        printf("tamEnBytesLog: %u\n", inodoN4.tamEnBytesLog);
+        printf("numBloquesOcupados: %u\n", inodoN4.numBloquesOcupados);
+
 #endif
     }
     else

@@ -399,8 +399,7 @@ int reservar_bloque()
         }
         // Ya sabemos cuál es el primer bit a 0
 
-
-        // Obtenemos el número de bloque que representa este bit 
+        // Obtenemos el número de bloque que representa este bit
         unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
 
         // Lo marcamos como reservado
@@ -489,7 +488,6 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
     }
     return 0;
 }
-
 
 int leer_inodo(unsigned int ninodo, struct inodo *inodo)
 {
@@ -701,7 +699,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                     // el bloque cuelga directamente del inodo
                     inodo.punterosIndirectos[nRangoBL - 1] = ptr; // (imprimirlo para test)
 #if DEBUGN4
-                    printf("[traducir_bloque_inodo() → inodo.punterosIndirectos[%d]: %d ]\n", nRangoBL - 1, ptr);
+                    printf("[traducir_bloque_inodo() → inodo.punterosIndirectos[%d]: %d (reservado BF %u para BL %u)]\n", nRangoBL - 1, ptr, ptr, nblogico);
 #endif
                 }
                 else
@@ -712,7 +710,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
                     // salvamos en el dispositivo el buffer de punteros modificado
 #if DEBUGN4
-                    printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d ]\n", nivel_punteros, indice, ptr);
+                    printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d (reservado BF %u para BL %u)]\n", nivel_punteros, indice, ptr, ptr, nblogico);
 #endif
                     if (bwrite(ptr_ant, buffer) == -1)
                     {
@@ -768,7 +766,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             {
                 inodo.punterosDirectos[nblogico] = ptr; // (imprimirlo para test)
 #if DEBUGN4
-                printf("[traducir_bloque_inodo() → inodo.punterosDirectos[%d] =  %d ]\n", nblogico, ptr);
+                printf("[traducir_bloque_inodo() → inodo.punterosDirectos[%d] =  %d (reservado BF %u para BL %u)]\n", nblogico, ptr, ptr, nblogico);
 #endif
             }
             else
@@ -776,7 +774,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 // asignamos la dirección del bloque de datos (imprimirlo para test)
                 buffer[indice] = ptr;
 #if DEBUGN4
-                printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d ]\n", nivel_punteros, indice, ptr);
+                printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d (reservado BF %u para BL %u)]\n", nivel_punteros, indice, ptr, ptr, nblogico);
 #endif
 
                 // salvamos en el dispositivo el buffer de punteros modificado
