@@ -130,7 +130,11 @@ int main(int argc, char **argv)
         traducir_bloque_inodo(ninodoN4, 30004, 1);
         traducir_bloque_inodo(ninodoN4, 400004, 1);
         traducir_bloque_inodo(ninodoN4, 468750, 1);
-
+        if (leer_inodo(ninodoN4, &inodoN4) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
         printf("\n\nDATOS DEL INODO RESERVADO %u\n", ninodoN4);
         printf("tipo: %c\n", inodoN4.tipo);
         printf("permisos: %u\n", inodoN4.permisos);
@@ -140,10 +144,18 @@ int main(int argc, char **argv)
         strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
         ts = localtime(&inodoN4.ctime);
         strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
-        printf("ID: %d ATIME: %s MTIME: %s CTIME: %s\n", ninodoN4, atime, mtime, ctime);
+        printf("atime: %s\nmtime: %s\nctime: %s\n", atime, mtime, ctime);
         printf("nlinks: %u\n", inodoN4.nlinks);
         printf("tamEnBytesLog: %u\n", inodoN4.tamEnBytesLog);
         printf("numBloquesOcupados: %u\n", inodoN4.numBloquesOcupados);
+
+        if (bread(0, &SB) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+        printf("\n\nSB.posPrimerInodoLibre = %u\n",SB.posPrimerInodoLibre);
+        
 
 #endif
     }
