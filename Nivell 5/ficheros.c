@@ -297,7 +297,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
 
     p_stat->nlinks = inodo.nlinks;
     p_stat->tamEnBytesLog = inodo.tamEnBytesLog;
-    p_stat->numBloquesOcupados = inodo.numBloque;
+    p_stat->numBloquesOcupados = inodo.numBloquesOcupados;
 
     return 0;
 }
