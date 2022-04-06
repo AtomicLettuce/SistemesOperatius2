@@ -79,4 +79,4 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos);
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar);
 
 int liberar_inodo(unsigned int ninodo);
-int liberar_bloques_inocos(unsigned int primerBL, struct inodo *inodo);
+int liberar_bloques_inodos(unsigned int primerBL, struct inodo *inodo);

@@ -796,3 +796,57 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     // nº de bloque físico correspondiente al bloque de datos lógico, nblogico
     return ptr;
 }
+
+
+
+
+int liberar_inodo(unsigned int ninodo){
+    struct inodo inodo;
+    struct superbloque SB;
+    // Leemos el inodo
+    if(leer_inodo(ninodo,&inodo)==ERROR){
+        perror("ERROR: ");
+        return ERROR;
+    }
+    // Liberamos sus bloques
+    int bliberados=liberar_bloques_inodos(0,&inodo);
+    // Control de errores
+    if(bliberados==ERROR){
+        perror("ERROR: ");
+        return ERROR;
+    }
+    // Actualizamos inodo.numBloquesOcupados
+    inodo.numBloquesOcupados=inodo.numBloquesOcupados-bliberados;
+
+    if(inodo.numBloquesOcupados==0){
+        // Lo marcamos como vacío y libre
+        inodo.tamEnBytesLog=0;
+        inodo.tipo='l';
+
+        if(bread(0,&SB)==ERROR){
+            perror("ERROR: ");
+            return ERROR;
+        }
+        // Ponemos el inodo que hemos liberado en la lista de libres
+        inodo.punterosDirectos[0]=SB.posPrimerInodoLibre;
+        SB.posPrimerInodoLibre=ninodo;
+        SB.cantInodosLibres++;
+
+        // Lo escribimos en el AI
+        if(escribir_inodo(ninodo,&inodo)==ERROR){
+            perror("ERROR: ");
+            return ERROR;
+        }
+        // Escribims el SB actualizado
+        if(bwrite(0,&SB)==ERROR){
+            perror("ERROR: ");
+            return ERROR;
+        }
+        return ninodo;
+    }else{
+        printf("[liberar_inodo()-> ERROR! inodo.numBloquesOcupados != 0. inodo.numBloquesOcupados = %u]",inodo.numBloquesOcupados);
+        return ERROR;
+    }
+
+
+}
