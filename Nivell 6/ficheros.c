@@ -163,6 +163,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         return ERROR;
     }
 
+    // Comprobamos que tenga permisos de lectura
     if ((inodo.permisos & 4) != 4)
     {
         printf("[mi_read_f(): ERROR DE PERMISOS]");
@@ -327,4 +328,63 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
     }
 
     return 0;
+}
+
+int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
+{
+    // Variable que retornaremos
+    unsigned int bliberados = 0;
+    // Leemos el inodo
+    struct inodo inodo;
+    if (leer_inodo(ninodo, &inodo) == ERROR)
+    {
+        perror("ERROR: ");
+        return ERROR;
+    }
+    // Comprobamos que tenga permisos de escritura
+    if ((inodo.permisos & 2) != 2)
+    {
+        printf("[truncar_f(): ERROR DE PERMISOS]");
+        return bliberados;
+    }
+    else
+    {
+
+        // Si la cantidad de bytes lógicos que hemos de liberar no cabe dentro de un número entero de bloques
+        // (nbytes%BLOCKSIZE !=0), liberaremos a partir del primer bloque completo que tengamos que liberar.
+        // Es decir, los bloques a medias los dejamos como estaban
+        int primerBL;
+        if (nbytes % BLOCKSIZE == 0)
+        {
+            primerBL = nbytes / BLOCKSIZE;
+        }
+        else
+        {
+            primerBL = nbytes / BLOCKSIZE + 1;
+        }
+
+        // Liberamos desde primerBL
+        bliberados = liberar_bloques_inodos(primerBL, &inodo);
+
+        if (bliberados == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+
+        // Actualizamos el inodo
+        inodo.tamEnBytesLog = nbytes;
+        inodo.ctime = time(NULL);
+        inodo.mtime = time(NULL);
+        inodo.numBloquesOcupados = inodo.numBloquesOcupados - bliberados;
+
+        // Escribimos el inodo ya actualizado
+        if (escribir_inodo(ninodo, &inodo) == ERROR)
+        {
+            perror("ERROR: ");
+            return ERROR;
+        }
+
+        return bliberados;
+    }
 }
