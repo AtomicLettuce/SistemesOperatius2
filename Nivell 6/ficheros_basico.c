@@ -798,7 +798,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 }
 
 
-
+// Nivel 6
 
 int liberar_inodo(unsigned int ninodo){
     struct inodo inodo;
@@ -849,4 +849,27 @@ int liberar_inodo(unsigned int ninodo){
     }
 
 
+}
+
+int liberar_bloques_inodos(unsigned int primerBL, struct inodo *inodo){
+
+    unsigned int ultimoBL;
+    // Si el inodo está vacío 
+    if (inodo->tamEnBytesLog == 0){
+
+        return 0;
+    }
+
+    // Calculamos la posición del último BL
+    if( inodo->tamEnBytesLog % BLOCKSIZE == 0){
+        
+        ultimoBL = inodo->tamEnBytesLog / BLOCKSIZE - 1;
+
+    }else{
+
+        ultimoBL = inodo->tamEnBytesLog / BLOCKSIZE;
+    }
+    
+
+    return 0;
 }
