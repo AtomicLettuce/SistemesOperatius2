@@ -6,6 +6,7 @@
 #define tamSB 1
 
 #define NPUNTEROS (BLOCKSIZE / sizeof(unsigned int)) // 256
+#define NPUNTEROS2 NPUNTEROS*NPUNTEROS // 256^2
 #define DIRECTOS 12
 #define INDIRECTOS0 (NPUNTEROS + DIRECTOS)                            // 268
 #define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0)             // 65.804
