@@ -41,8 +41,30 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo){
     }
 }
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
-                     char reservar, unsigned char permisos){
+ char reservar, unsigned char permisos){
 
+    struct superbloque SB;
+    struct entrada entrada;
+    struct inodo inodo_dir;
+    char inicial[sizeof(entrada.nombre)];
+    char final[strlen(camino_parcial)];
+    char tipo;
+    int cant_entradas_inodo;
+    int num_entrada_inodo;
+
+    // Leemos superbloque
+    if(bread(0, &SB)==ERROR){
+        perror("ERROR");
+        return ERROR;
+    }
+
+    if(strcmp(camino_parcial,"/")==0){
+        *p_inodo=SB.posInodoRaiz;
+        *p_entrada=0;
+        return 0;
+    }
+
+    
 
 
 }
