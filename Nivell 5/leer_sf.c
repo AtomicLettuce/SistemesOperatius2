@@ -7,10 +7,10 @@ int main(int argc, char **argv)
     struct superbloque SB;
     char *camino = argv[1];
 
-    struct tm *ts;
-    char atime[80];
-    char mtime[80];
-    char ctime[80];
+    //struct tm *ts;
+    //char atime[80];
+    //char mtime[80];
+    //char ctime[80];
 
     if (argc != 2)
     {
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         printf("numBloquesOcupados: %u\n", dirRaiz.numBloquesOcupados);
 #endif
 
-#if DEBUGN4
+#if DEBUGN41
         struct inodo inodoN4;
         unsigned int ninodoN4 = reservar_inodo('f', 6);
 
