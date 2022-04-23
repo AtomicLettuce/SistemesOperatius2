@@ -125,7 +125,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     }
     // Copiamos el contenido de la entrada a nuestra variable entrada para poder trabajar de forma mas clara
     entrada.ninodo = buf[i % (BLOCKSIZE / TAMENTRADA)].ninodo;
-    strcpy(entrada.nombre,buf[i%(BLOCKSIZE/TAMENTRADA)].nombre);
+    strcpy(entrada.nombre, buf[i % (BLOCKSIZE / TAMENTRADA)].nombre);
 
     if (strcmp(inicial, entrada.nombre) != 0)
     {
