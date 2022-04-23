@@ -20,6 +20,7 @@ int main(int argc, char **argv)
     memset(buf_original, *argv[2], BLOCKSIZE);
     if (bmount(camino) == -1)
     {
+        perror("ERROR");
         return -1;
     }
     printf("longitud texto: %u\n", nbytes);
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
     }
     if (bumount() == -1)
     {
+        perror("ERROR");
         return -1;
     }
     return 0;
