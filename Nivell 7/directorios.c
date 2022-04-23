@@ -45,7 +45,6 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
 {
-
     struct superbloque SB;
     struct entrada entrada;
     struct inodo inodo_dir;
@@ -75,6 +74,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         perror("ERROR: ");
         return ERROR_CAMINO_INCORRECTO;
     }
+#if DEBUGN7
+    printf("[buscar_entrada()-> inicial:%s final:%s,reservar%i]", inicial, final, reservar);
+#endif
     // buscamos la entrada cuyo nombre se encuentra en inicial
     if (leer_inodo(*p_inodo_dir, &inodo_dir) == ERROR)
     {
@@ -84,7 +86,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // Comprobamos si tiene permisos de lectura
     if ((inodo_dir.permisos & 4) != 4)
     {
-        perror("ERROR: ");
         return ERROR_PERMISO_LECTURA;
     }
     // Declaración de búfer que contiene tantas entradas como puede haber en un bloque
@@ -157,6 +158,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                             perror("ERROR: ");
                             return ERROR;
                         }
+#if DEBUGN7
+                        printf("[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]", reservado, tipo, permisos, inicial);
+#endif
                         entrada.ninodo = reservado;
                     }
                     else
@@ -172,6 +176,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                         perror("ERROR: ");
                         return ERROR;
                     }
+#if DEBUGN7
+                    printf("[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]", reservado, tipo, permisos, inicial);
+#endif
                     entrada.ninodo = reservado;
                 }
                 // Actualizamos el búfer de entradas para poder escribirlo como toca
@@ -188,6 +195,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                     }
                     return EXIT_FAILURE;
                 }
+#if DEBUGN7
+                printf("[buscar_entrada()-> creada entrada %s, %i", entrada.nombre, entrada.ninodo);
+#endif
             }
             break;
         }

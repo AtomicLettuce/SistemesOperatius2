@@ -19,7 +19,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     // Comprobamos si tiene permisos de escritura
     if ((inodo.permisos & 2) != 2)
     {
-        printf("[mi_read_f(): ERROR DE PERMISOS]");
+        printf("[mi_write_f(): ERROR DE PERMISOS]");
         return nbytesEscritos;
     }
     else
