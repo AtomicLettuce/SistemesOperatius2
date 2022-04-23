@@ -27,6 +27,7 @@ int main(int argc, char **argv)
                 mi_truncar_f(ninodo,nbytes);
             }
             mi_stat_f(ninodo, &p_stat);
+            printf("\n");
             printf("DATOS INODO %u:\n",ninodo);
             printf("tipo = %c\n",p_stat.tipo);
             printf("permisos = %u\n",p_stat.permisos);
@@ -39,8 +40,10 @@ int main(int argc, char **argv)
             printf("atime %s:\n",atime);
             printf("ctime %s:\n",ctime);
             printf("mtime %s:\n",mtime);
+            printf("nlinks = %u", p_stat.nlinks);
             printf("tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
             printf("numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
+            printf("\n");
         }else
         {
             perror("ERROR");
