@@ -20,7 +20,6 @@ int main(int argc, char **argv)
     if (bread(0, &SB) != -1)
     {
         leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
-        printf("\n%d\n",leidos);
         //while (leidos > 0)
         //{
         //    write(1,buffer_texto,leidos);
