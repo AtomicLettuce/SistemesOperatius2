@@ -9,10 +9,11 @@ int main(int argc, char **argv)
     struct superbloque SB;
     char string[128];
     char *camino = argv[1];
-    int ninodo = atoi(argv[2]);
-    int leidos, offset = 0;
+    unsigned int ninodo = atoi(argv[2]);
+    unsigned int leidos, offset = 0;
     void *buffer_texto = malloc(BLOCKSIZE);
     memset(buffer_texto, 0, BLOCKSIZE);
+    printf("\n%u\n",ninodo);
     if (bmount(camino) == -1)
     {
         return -1;
@@ -20,13 +21,13 @@ int main(int argc, char **argv)
     if (bread(0, &SB) != -1)
     {
         leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
-        //while (leidos > 0)
-        //{
-        //    write(1,buffer_texto,leidos);
-        //    offset = offset + BLOCKSIZE;
-        //    memset(buffer_texto, 0, BLOCKSIZE);
-        //    leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
-        //}
+        while (leidos > 0)
+        {
+            write(1,buffer_texto,leidos);
+            offset = offset + BLOCKSIZE;
+            memset(buffer_texto, 0, BLOCKSIZE);
+            leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
+        }
         sprintf(string, "bytes leídos %d\n", leidos);
         write(2, string, strlen(string));
     }else
