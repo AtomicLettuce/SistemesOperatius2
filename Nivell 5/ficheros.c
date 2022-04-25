@@ -266,7 +266,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                     perror("ERROR: ");
                     return ERROR;
                 }
-
                 memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque, desp2 + 1);
             }
             // Actualizamos el número de bytes leídos

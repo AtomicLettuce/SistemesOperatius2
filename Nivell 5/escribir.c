@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     struct superbloque SB;
     char *camino = argv[1];
     int diferentes_inodos = atoi(argv[3]);
-    long unsigned int offsets[] = {9000,209000,30725000,409605000,4800000000};
+    long unsigned int offsets[] = {9000,209000,30725000,409605000,480000000};
     unsigned int ninodo, bytes_es;
     unsigned int nbytes = strlen(argv[2]);
     void *buf_original = malloc(BLOCKSIZE);

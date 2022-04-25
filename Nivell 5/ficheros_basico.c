@@ -746,15 +746,15 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     if (ptr == 0)
     {
 
-        if (reservar == 0)
-        {
+        //if (reservar == 0)
+        //{
 
             // error lectura ∄ bloque
-            perror("Error: ");
-            return ERROR;
-        }
-        else
-        {
+            //perror("Error: ");
+            //return ERROR;
+        //}
+        //else
+        //{
 
             salvar_inodo = 1;
             ptr = reservar_bloque(); // de datos
@@ -784,7 +784,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                     perror("Error: ");
                     return ERROR;
                 }
-            }
+            //}- ,
         }
     }
 
