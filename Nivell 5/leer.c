@@ -7,13 +7,14 @@ int main(int argc, char **argv)
         return -1;
     } 
     struct superbloque SB;
+    struct STAT p_stat;
     char string[128];
     char *camino = argv[1];
     unsigned int ninodo = atoi(argv[2]);
     unsigned int leidos, offset = 0;
+    unsigned int t_leidos = 0;
     void *buffer_texto = malloc(BLOCKSIZE);
     memset(buffer_texto, 0, BLOCKSIZE);
-    printf("\n%u\n",ninodo);
     if (bmount(camino) == -1)
     {
         return -1;
@@ -23,12 +24,16 @@ int main(int argc, char **argv)
         leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
         while (leidos > 0)
         {
-            write(1,buffer_texto,leidos);
+            write(1, buffer_texto ,leidos);
             offset = offset + BLOCKSIZE;
             memset(buffer_texto, 0, BLOCKSIZE);
+            t_leidos  += leidos;
             leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
         }
-        sprintf(string, "bytes leídos %d\n", leidos);
+        sprintf(string, "\ntotal_leidos %d\n", t_leidos);
+        write(2, string, strlen(string));
+        mi_stat_f(ninodo, &p_stat);
+        sprintf(string, "tamEnBytesLog %d\n", p_stat.tamEnBytesLog);
         write(2, string, strlen(string));
     }else
     {

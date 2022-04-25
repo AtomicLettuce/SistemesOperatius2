@@ -16,14 +16,15 @@ int main(int argc, char **argv)
     long unsigned int offsets[] = {9000,209000,30725000,409605000,480000000};
     unsigned int ninodo, bytes_es;
     unsigned int nbytes = strlen(argv[2]);
-    void *buf_original = malloc(BLOCKSIZE);
-    memset(buf_original, *argv[2], BLOCKSIZE);
+    char *buf_original = malloc(nbytes);
+    strcpy(buf_original, argv[2]);
     if (bmount(camino) == -1)
     {
         perror("ERROR");
         return -1;
     }
     printf("longitud texto: %u\n", nbytes);
+    //printf("%s",buf_original);
     if (bread(0, &SB) != -1)
     {
         if (diferentes_inodos == 0)
@@ -44,9 +45,15 @@ int main(int argc, char **argv)
                 ninodo = reservar_inodo('f',6);
                 printf("\n");
                 printf("Nº inodo reservado: %u\n", ninodo);
-                printf("offset: %lu\n", offsets[i]);
+                printf("offset: %lu\n\n", offsets[i]);
                 bytes_es = mi_write_f(ninodo, buf_original, offsets[i], nbytes);
-                printf("Bytes escritos: %u\n" ,bytes_es);
+
+                //memset(buf_original, 0, nbytes);
+                //mi_read_f(ninodo, buf_original, offsets[i], bytes_es);
+                //write(1, buf_original , bytes_es);
+
+
+                printf("\n\nBytes escritos: %u\n" ,bytes_es);
                 mi_stat_f(ninodo, &p_stat);
                 printf("stat.tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
                 printf("stat.numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);

@@ -13,13 +13,14 @@ int main(int argc, char **argv)
     struct superbloque SB;
     char *camino = argv[1];
     int diferentes_inodos = atoi(argv[3]);
-    long unsigned int offsets[] = {9000,209000,30725000,409605000,4800000000};
+    long unsigned int offsets[] = {9000,209000,30725000,409605000,480000000};
     unsigned int ninodo, bytes_es;
     unsigned int nbytes = strlen(argv[2]);
-    void *buf_original = malloc(BLOCKSIZE);
-    memset(buf_original, *argv[2], BLOCKSIZE);
+    char *buf_original = malloc(nbytes);
+    strcpy(buf_original, argv[2]);
     if (bmount(camino) == -1)
     {
+        perror("ERROR");
         return -1;
     }
     printf("longitud texto: %u\n", nbytes);
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
     }
     if (bumount() == -1)
     {
+        perror("ERROR");
         return -1;
     }
     return 0;
