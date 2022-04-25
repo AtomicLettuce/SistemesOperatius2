@@ -40,7 +40,7 @@ int main(int argc, char **argv)
             printf("atime %s:\n",atime);
             printf("ctime %s:\n",ctime);
             printf("mtime %s:\n",mtime);
-            printf("nlinks = %u", p_stat.nlinks);
+            printf("nlinks = %u\n", p_stat.nlinks);
             printf("tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
             printf("numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
             printf("\n");

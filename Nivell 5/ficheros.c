@@ -148,6 +148,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     int nbytesLeidos = 0;
     char buf_bloque[BLOCKSIZE];
     int nbfisico;
+    char string[128];
 
     // Leemos el inodo
     if (leer_inodo(ninodo, &inodo) == ERROR)
@@ -165,7 +166,8 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 
     if ((inodo.permisos & 4) != 4)
     {
-        printf("[mi_read_f(): ERROR DE PERMISOS]");
+        sprintf(string, "No hay permisos de lectura\n");
+        write(2, string, strlen(string));
         return nbytesLeidos;
     }
     else

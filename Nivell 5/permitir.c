@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     }else{
 
         // Mala Sintaxi
-        perror("ERROR");
+        printf("Sintaxis: permitir <nombre_dispositivo> <ninodo> <permisos>\n");
 	    return -1;
 
     }
