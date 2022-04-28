@@ -680,7 +680,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             if (reservar == 0)
             {
                 // bloque inexistente -> no imprimir nada por pantalla!!!
-                perror("Error: ");
+                //perror("Error: ");
                 return ERROR;
             }
             else
@@ -714,8 +714,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 #endif
                     if (bwrite(ptr_ant, buffer) == -1)
                     {
-
-                        perror("Error: ");
                         return ERROR;
                     }
                 }
@@ -729,8 +727,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             // leemos del dispositivo el bloque de punteros ya existente
             if (bread(ptr, buffer) == -1)
             {
-
-                perror("Error: ");
                 return ERROR;
             }
         }
@@ -750,7 +746,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
         {
 
             // error lectura ∄ bloque
-            perror("Error: ");
             return ERROR;
         }
         else
@@ -780,8 +775,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 // salvamos en el dispositivo el buffer de punteros modificado
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
-
-                    perror("Error: ");
                     return ERROR;
                 }
             }
