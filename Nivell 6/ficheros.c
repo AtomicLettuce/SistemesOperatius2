@@ -13,14 +13,14 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     if (leer_inodo(ninodo, &inodo) == ERROR)
     {
         perror("ERROR: ");
-        return nbytesEscritos;
+        return ERROR;
     }
 
     // Comprobamos si tiene permisos de escritura
     if ((inodo.permisos & 2) != 2)
     {
         printf("[mi_read_f(): ERROR DE PERMISOS]");
-        return nbytesEscritos;
+        return ERROR;
     }
     else
     {
@@ -44,7 +44,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             if (bread(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
 
             // Copiamos el contenido que había que escribir
@@ -54,7 +54,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             if (bwrite(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
             nbytesEscritos = nbytes;
         }
@@ -66,30 +66,25 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             if (bread(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
             // Copiamos lo que faltaba del primer BL
             memcpy(buf_bloque + desp1, buf_bloque, BLOCKSIZE - desp1);
             if (bwrite(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
-            nbytesEscritos = nbytesEscritos + BLOCKSIZE - desp1;
+            nbytesEscritos += BLOCKSIZE - desp1;
 
             // Escribimos los bloques intermedios
             for (int i = primerBL + 1; i < ultimoBL; i++)
             {
                 // Obtenemos nbfisico apuntado por en i-ésimo bloque lógico
                 nbfisico = traducir_bloque_inodo(ninodo, i, 1);
-                // Lo sobreescribimos
-                if (bwrite(nbfisico, buf_original + (1024 - desp1) + (i - primerBL - 1) * BLOCKSIZE) == ERROR)
-                {
-                    perror("ERROR: ");
-                    return nbytesEscritos;
-                }
+                
                 // Actualizamos nbytesEscritos
-                nbytesEscritos = nbytesEscritos + BLOCKSIZE;
+                nbytesEscritos += bwrite(nbfisico, buf_original + (BLOCKSIZE - desp1) + (i - primerBL - 1) * BLOCKSIZE);
             }
 
             // Último bloque lógico
@@ -98,7 +93,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             if (bread(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
             // Sobreescribimos la parte que queremos
             memcpy(buf_bloque, buf_original + (nbytes - desp2 - 1), desp2 + 1);
@@ -107,9 +102,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             if (bwrite(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
-                return nbytesEscritos;
+                return ERROR;
             }
-            nbytesEscritos = nbytesEscritos + desp2 + 1;
+            nbytesEscritos += desp2 + 1;
         }
     }
     // Actualizamos los atributos del inodo
@@ -233,7 +228,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 // Copiamos lo que nos interesa
                 memcpy(buf_original, buf_bloque + desp1, BLOCKSIZE - desp1);
             }
-            nbytesLeidos = nbytesLeidos + BLOCKSIZE - desp1;
+            nbytesLeidos += BLOCKSIZE - desp1;
 
             // Para los bloques intermedios entre primerBL y ultimoBL
             for (int i = primerBL + 1; i < ultimoBL; i++)
@@ -276,7 +271,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         }
     }
     // Por si acaso
-    return nbytesLeidos;
+    return ERROR;
 }
 
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
@@ -330,61 +325,3 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
     return 0;
 }
 
-int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
-{
-    // Variable que retornaremos
-    unsigned int bliberados = 0;
-    // Leemos el inodo
-    struct inodo inodo;
-    if (leer_inodo(ninodo, &inodo) == ERROR)
-    {
-        perror("ERROR: ");
-        return ERROR;
-    }
-    // Comprobamos que tenga permisos de escritura
-    if ((inodo.permisos & 2) != 2)
-    {
-        printf("[truncar_f(): ERROR DE PERMISOS]");
-        return bliberados;
-    }
-    else
-    {
-
-        // Si la cantidad de bytes lógicos que hemos de liberar no cabe dentro de un número entero de bloques
-        // (nbytes%BLOCKSIZE !=0), liberaremos a partir del primer bloque completo que tengamos que liberar.
-        // Es decir, los bloques a medias los dejamos como estaban
-        int primerBL;
-        if (nbytes % BLOCKSIZE == 0)
-        {
-            primerBL = nbytes / BLOCKSIZE;
-        }
-        else
-        {
-            primerBL = nbytes / BLOCKSIZE + 1;
-        }
-
-        // Liberamos desde primerBL
-        bliberados = liberar_bloques_inodos(primerBL, &inodo);
-
-        if (bliberados == ERROR)
-        {
-            perror("ERROR: ");
-            return ERROR;
-        }
-
-        // Actualizamos el inodo
-        inodo.tamEnBytesLog = nbytes;
-        inodo.ctime = time(NULL);
-        inodo.mtime = time(NULL);
-        inodo.numBloquesOcupados = inodo.numBloquesOcupados - bliberados;
-
-        // Escribimos el inodo ya actualizado
-        if (escribir_inodo(ninodo, &inodo) == ERROR)
-        {
-            perror("ERROR: ");
-            return ERROR;
-        }
-
-        return bliberados;
-    }
-}
