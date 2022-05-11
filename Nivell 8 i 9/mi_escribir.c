@@ -9,8 +9,8 @@ int main(int argc, char **argv)
         // Montar el dispositivo
         bmount(argv[1]);
 
-        char *camino;
-        strcpy(camino,argv[2]);
+        char camino[strlen(argv[2])];
+        strcpy(camino, argv[2]);
 
         // Caso en el que no se especifica un fichero
         if(camino[strlen(camino)-1]=='/'){
@@ -18,7 +18,7 @@ int main(int argc, char **argv)
         }
         // Escribimos el texto
         else{
-            char *texto;
+            char texto[strlen(argv[3])];
             strcpy(texto,argv[3]);
             printf("Longitud del texto: %li", strlen(texto));
             
