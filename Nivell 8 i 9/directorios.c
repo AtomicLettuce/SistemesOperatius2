@@ -2,6 +2,8 @@
 #include "debugging.h"
 #include <string.h>
 
+struct UltimaEntrada UltimaEntrada;
+
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 {
 
@@ -250,8 +252,6 @@ void mostrar_error_buscar_entrada(int error)
     }
 }
 
-
-
 // Nivel 8
 
 int mi_creat(const char *camino, unsigned char permisos)
@@ -270,11 +270,51 @@ int mi_chmod(const char *camino, unsigned char permisos)
 {
     int resultado;
     unsigned int p_inodo_dir, p_inodo, p_entrada;
-   
 
     resultado = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, permisos);
 }
 
 int mi_stat(const char *camino, struct STAT *p_stat)
 {
+}
+
+// Nivell 9
+int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes)
+{
+    int nbytesEscritos = 0;
+    unsigned int p_inodo;
+
+    // Comprobamos si coincide con la ultima entrada
+    if (strcmp(UltimaEntrada.camino, camino) == 0)
+    {
+        p_inodo = UltimaEntrada.p_inodo;
+#if DEBUGN9
+        printf("[mi_write()--> Utilizamos la caché de escritura en vez de llamar a buscar_entrada()]\n");
+#endif
+    }
+    // Caso en el que no coincide con la ultima entrada y tendremos que llamar a buscar_entrada()
+    else
+    {
+        unsigned int p_inodo_dir = 0;
+        unsigned int p_entrada = 0;
+        int error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 0);
+
+        // Caso en el que ha ocurrido algun error
+        if (error < 0)
+        {
+            mostrar_error_buscar_entrada(error);
+            // return ERROR ????
+            return nbytesEscritos;
+        }
+    }
+
+    nbytesEscritos = mi_write_f(p_inodo, buf, offset, nbytes);
+
+#if DEBUGN9
+    printf("[mi_write() --> Actualizamos la caché de escritura]\n");
+#endif
+    strcpy(UltimaEntrada.camino, camino);
+    UltimaEntrada.p_inodo = p_inodo;
+
+    return nbytesEscritos;
 }
