@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     unsigned int leidos, offset = 0;
     unsigned int t_leidos = 0;
     int tambuffer = 1500;
-    unsigned char *buffer_texto = malloc(tambuffer);
+    char buffer_texto[tambuffer];
     memset(buffer_texto, 0, tambuffer);
     if (bmount(camino) == -1)
     {

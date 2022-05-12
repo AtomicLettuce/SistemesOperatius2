@@ -56,7 +56,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
                 perror("ERROR: ");
                 return ERROR;
             }
-            nbytesEscritos = desp2-desp1+1;
+            nbytesEscritos = nbytes;
         }
         // Caso en el que la operación de escritura afecta a más de un bloque
         else
@@ -69,7 +69,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
                 return ERROR;
             }
             // Copiamos lo que faltaba del primer BL
-            memcpy(buf_bloque + desp1, buf_bloque, BLOCKSIZE - desp1);
+            memcpy(buf_bloque + desp1, buf_original, BLOCKSIZE - desp1);
             if (bwrite(nbfisico, buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
@@ -83,8 +83,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
                 // Obtenemos nbfisico apuntado por en i-ésimo bloque lógico
                 nbfisico = traducir_bloque_inodo(ninodo, i, 1);
 
+                bwrite(nbfisico, buf_original + (BLOCKSIZE - desp1) + (i - primerBL - 1) * BLOCKSIZE);
                 // Actualizamos nbytesEscritos
-                nbytesEscritos += bwrite(nbfisico, buf_original + (BLOCKSIZE - desp1) + (i - primerBL - 1) * BLOCKSIZE);
+                nbytesEscritos += BLOCKSIZE;
             }
 
             // Último bloque lógico
