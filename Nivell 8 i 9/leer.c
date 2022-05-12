@@ -27,9 +27,7 @@ int main(int argc, char **argv)
         while (leidos > 0)
         {
             write(1, buffer_texto ,leidos);
-
-            offset += tambuffer;
-
+            offset = offset + tambuffer;
             memset(buffer_texto, 0, tambuffer);
             t_leidos  += leidos;
             leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);

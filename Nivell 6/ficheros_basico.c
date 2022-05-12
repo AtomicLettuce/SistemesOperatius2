@@ -649,6 +649,7 @@ int obtener_indice(unsigned int nblogico, int nivel_punteros)
     return ERROR;
 }
 
+
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar) {
     struct inodo inodo;
 
@@ -719,14 +720,24 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 printf("[traducir_bloque_inodo() → punteros_nivel%d[%d] = %d (reservado BF %u para BL %u)]\n", nivel_punteros + 1, indice, ptr, ptr, nblogico);
 #endif
                 bwrite(ptr_ant, buffer);
+
             }
+            // escribimos en el dispositivo el inodo actualizado
+            escribir_inodo(ninodo, &inodo);
+#if DEBUGN4
+            printf("[traducir_bloque_inodo() → punteros_nivel1[1] = %d (reservado BF %u para BL %u)]\n", ptr, ptr, nblogico);
+#endif
+            break;
         }
+        // printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
+        return ptr;
     }
 
     if (salvar_inodo == 1) {
         escribir_inodo(ninodo, &inodo);// sólo si lo hemos actualizado
     }
     // nº de bloque físico correspondiente al bloque de datos lógico, nblogico
+
     return ptr;
 }
 // Nivel 6
