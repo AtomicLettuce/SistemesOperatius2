@@ -19,7 +19,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     // Comprobamos si tiene permisos de escritura
     if ((inodo.permisos & 2) != 2)
     {
-        printf("[mi_read_f(): ERROR DE PERMISOS]");
+        fprintf(stderr,"No hay permisos de lectura\n");
         return ERROR;
     }
     else
@@ -56,7 +56,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
                 perror("ERROR: ");
                 return ERROR;
             }
-            nbytesEscritos = nbytes;
+            nbytesEscritos = desp2-desp1+1;
         }
         // Caso en el que la operación de escritura afecta a más de un bloque
         else
@@ -75,14 +75,14 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
                 perror("ERROR: ");
                 return ERROR;
             }
-            nbytesEscritos += BLOCKSIZE - desp1;
+            nbytesEscritos = BLOCKSIZE - desp1;
 
             // Escribimos los bloques intermedios
             for (int i = primerBL + 1; i < ultimoBL; i++)
             {
                 // Obtenemos nbfisico apuntado por en i-ésimo bloque lógico
                 nbfisico = traducir_bloque_inodo(ninodo, i, 1);
-                
+
                 // Actualizamos nbytesEscritos
                 nbytesEscritos += bwrite(nbfisico, buf_original + (BLOCKSIZE - desp1) + (i - primerBL - 1) * BLOCKSIZE);
             }
@@ -99,7 +99,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             memcpy(buf_bloque, buf_original + (nbytes - desp2 - 1), desp2 + 1);
 
             // Lo escribimos en el dispositivo
-            if (bwrite(nbfisico, buf_bloque) == ERROR)
+            if (bwrite(nbfisico, &buf_bloque) == ERROR)
             {
                 perror("ERROR: ");
                 return ERROR;
@@ -120,9 +120,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     }
 
     // Actualizamos tamEnBytesLog y ctime si hemos escrito más allá del final de fichero
-    if (offset + nbytes > inodo.tamEnBytesLog)
+    if (offset + nbytesEscritos > inodo.tamEnBytesLog)
     {
-        inodo.tamEnBytesLog = offset + nbytes;
+        inodo.tamEnBytesLog = offset + nbytesEscritos;
         inodo.ctime = time(NULL);
     }
 
@@ -161,7 +161,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     // Comprobamos que tenga permisos de lectura
     if ((inodo.permisos & 4) != 4)
     {
-        printf("[mi_read_f(): ERROR DE PERMISOS]");
+        fprintf(stderr,"No hay permisos de lectura\n");
         return nbytesLeidos;
     }
     else
@@ -172,7 +172,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
             return nbytesLeidos;
         }
         // Comprobamos  si pretende leer más allá del EOF
-        if ((offset + nbytes) >= inodo.tamEnBytesLog)
+	else if ((offset + nbytes) >= inodo.tamEnBytesLog)
         {
             nbytes = inodo.tamEnBytesLog - offset;
         }
@@ -245,10 +245,9 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                         perror("ERROR: ");
                         return ERROR;
                     }
-                    // Lo copiamos en el buf_original
                     memcpy(buf_original + (BLOCKSIZE - desp1) + (i - primerBL - 1) * BLOCKSIZE, buf_bloque, BLOCKSIZE);
                 }
-                nbytesLeidos = nbytesLeidos + BLOCKSIZE;
+                nbytesLeidos += BLOCKSIZE;
             }
             // Para el último bloque o fragmento de bloque que tengamos que leer
             nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 0);
@@ -266,7 +265,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque, desp2 + 1);
             }
             // Actualizamos el número de bytes leídos
-            nbytesLeidos = nbytesLeidos + desp2 + 1;
+            nbytesLeidos += desp2 + 1;
             return nbytesLeidos;
         }
     }

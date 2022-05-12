@@ -677,7 +677,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 if (nivel_punteros == nRangoBL) {// el bloque cuelga directamente del inodo
                     inodo.punterosIndirectos[nRangoBL - 1] = ptr;// (imprimirlo para test)
 #if DEBUGN4
-                    printf("[traducir_bloque_inodo() → inodo.punterosIndirectos[%d]: %d (reservado BF %u para punteros_nivel%u)]\n", nRangoBL - 1, ptr, ptr, nivel_punteros);
+                    printf("[traducir_bloque_inodo() → inodo.punterosIndirectos[%d] = %d (reservado BF %u para punteros_nivel%u)]\n", nRangoBL - 1, ptr, ptr, nivel_punteros);
 #endif                   
                 } else {// el bloque cuelga de otro bloque de punteros
                     buffer[indice] = ptr;// salvamos en el dispositivo el buffer de punteros modificado

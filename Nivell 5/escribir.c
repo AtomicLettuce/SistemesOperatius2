@@ -10,50 +10,45 @@ int main(int argc, char **argv)
         return -1;
     }
     struct STAT p_stat;
-    struct superbloque SB;
     char *camino = argv[1];
     int diferentes_inodos = atoi(argv[3]);
     long unsigned int offsets[] = {9000,209000,30725000,409605000,480000000};
     unsigned int ninodo, bytes_es;
     unsigned int nbytes = strlen(argv[2]);
+
+    unsigned char buf[nbytes];
+    memset(buf, 0, nbytes);
+    memcpy(buf, argv[2], nbytes);
+
     if (bmount(camino) == -1)
     {
         perror("ERROR");
         return -1;
     }
     printf("longitud texto: %u\n", nbytes);
-    if (bread(0, &SB) != -1)
+    if (diferentes_inodos == 0)
     {
-        if (diferentes_inodos == 0)
-        {
-            ninodo = reservar_inodo('f',6);
-            for (int i = 0; i < 5; i++){
-                printf("\n");
-                printf("Nº inodo reservado: %u\n", ninodo);
-                printf("offset: %lu\n\n", offsets[i]);
-                bytes_es = mi_write_f(ninodo, argv[2], offsets[i], nbytes);
-                printf("Bytes escritos: %u\n" ,bytes_es);
-                mi_stat_f(ninodo, &p_stat);
-                printf("stat.tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
-                printf("stat.numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
-            }
-        } else {
-            for (int i = 0; i < 5; i++){
-                ninodo = reservar_inodo('f',6);
-                printf("\n");
-                printf("Nº inodo reservado: %u\n", ninodo);
-                printf("offset: %lu\n\n", offsets[i]);
-                bytes_es = mi_write_f(ninodo, argv[2], offsets[i], nbytes);
-                printf("\n\nBytes escritos: %u\n" ,bytes_es);
-                mi_stat_f(ninodo, &p_stat);
-                printf("stat.tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
-                printf("stat.numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
-            }
+        ninodo = reservar_inodo('f',6);
+        for (int i = 0; i < 5; i++){
+            printf("\nNº inodo reservado: %u\n", ninodo);
+            printf("offset: %lu\n", offsets[i]);
+            bytes_es = mi_write_f(ninodo, buf, offsets[i], nbytes);
+            fprintf(stderr,"Bytes escritos: %u\n" ,bytes_es);
+            mi_stat_f(ninodo, &p_stat);
+            fprintf(stderr,"stat.tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
+            fprintf(stderr,"stat.numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
         }
-    }else
-    {
-        perror("ERROR");
-        return -1;
+    } else {
+        for (int i = 0; i < 5; i++){
+            ninodo = reservar_inodo('f',6);
+            printf("Nº inodo reservado: %u\n", ninodo);
+            printf("offset: %lu\n", offsets[i]);
+            bytes_es = mi_write_f(ninodo, buf, offsets[i], nbytes);
+            printf("\nBytes escritos: %u\n" ,bytes_es);
+            mi_stat_f(ninodo, &p_stat);
+            printf("stat.tamEnBytesLog = %u\n",p_stat.tamEnBytesLog);
+            printf("stat.numBloquesOcupados = %u\n",p_stat.numBloquesOcupados);
+        }
     }
     if (bumount() == -1)
     {

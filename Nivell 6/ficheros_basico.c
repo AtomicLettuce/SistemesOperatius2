@@ -789,7 +789,7 @@ int liberar_inodo(unsigned int ninodo)
     }
 }
 
-int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
+int liberar_bloques_inodos(unsigned int primerBL, struct inodo *inodo){
     unsigned int nivel_punteros, nblog, ultimoBL,indice, ptr;
     unsigned char bufAux_punteros[BLOCKSIZE];
     unsigned int bloques_punteros[3][NPUNTEROS];
@@ -799,10 +799,6 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
     int contador_bwrites = 0;// para comprobar optimización eficiencia
     int nRangoBL;
     int ptr_nivel[3];// punteros a los bloques
-
-#if DEBUGN6
-    int BLliberado = 0; // utilizado para imprimir el nº de bloque lógico que se ha liberado
-#endif
 
     if ((inodo->tamEnBytesLog) == 0) {// si el inodo está vacío
         return liberados;
@@ -819,15 +815,11 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
 #endif
 
     memset(bufAux_punteros, 0, BLOCKSIZE);
-
-#if DEBUGN6
-    fprintf(stderr,"[liberar_bloques_inodo()-> primerBL: %d, ultimoBL: %d]\n", primerBL, ultimoBL);
-#endif
     //Recorremos los bloques del inodo.
     for (nblog = primerBL; nblog <= ultimoBL; nblog++){
         nRangoBL = obtener_nRangoBL(inodo, nblog, &ptr);
         if (nRangoBL < 0){
-            fprintf(stderr, "ERROR al obtener el rango del BL en el método %s()",__func__);
+            fprintf(stderr, "ERROR al obtener el rango del BL\n");
             return ERROR;
         }
         nivel_punteros = nRangoBL; 
@@ -836,15 +828,15 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
             indice = obtener_indice(nblog, nivel_punteros);
             if ((indice == 0) || (nblog == primerBL)){
                 if (bread(ptr, bloques_punteros[nivel_punteros - 1]) == ERROR){
-                    fprintf(stderr, "Error: leer el dispositivo no cargado previamente, en el método %s()",__func__);
+                    fprintf(stderr, "Error: leer el dispositivo no cargado previamente\n");
                     return ERROR;
                 }
                 //Como hemos hecho una lectura incrementamos los breads.
-                breads++;
+                contador_breads++;
             }
 
             ptr_nivel[nivel_punteros - 1] = ptr;
-            indices[nivel_punteros - 1] = indice;
+            indices_primerBL[nivel_punteros - 1] = indice;
             ptr = bloques_punteros[nivel_punteros - 1][indice];
             nivel_punteros--;
         }
@@ -863,7 +855,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                 nivel_punteros = 1;
                 while (nivel_punteros <= nRangoBL){
 
-                    indice = indices[nivel_punteros - 1];
+                    indice = indices_primerBL[nivel_punteros - 1];
                     bloques_punteros[nivel_punteros - 1][indice] = 0;
                     ptr = ptr_nivel[nivel_punteros - 1];
 
@@ -881,11 +873,11 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
                         nivel_punteros++;
                     } else { //escribimos en el dispositivo el bloque de punteros modificado
                         if (bwrite(ptr, bloques_punteros[nivel_punteros - 1]) == ERROR){
-                            fprintf(stderr, "Error: de escritura en el método %s()",__func__);
+                            fprintf(stderr, "Error de escritura\n");
                             return ERROR;
                         }
                         //Como hemos escrito lo actualizamos.
-                        bwrites++;
+                        contador_bwrites++;
                         //Salimos ya que no es necesario liberar nada mas.
                         nivel_punteros = nRangoBL + 1;
                     }
@@ -894,7 +886,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo){
         }
     }
 #if DEBUGN6
-    fprintf(stderr,"[liberar_bloques_inodo()-> total bloques liberados: %d,total breads: %d, total bwrites: %d]\n", liberados,breads,bwrites);
+    fprintf(stderr,"[liberar_bloques_inodo()-> total bloques liberados: %d,total breads: %d, total bwrites: %d]\n", liberados,contador_breads,contador_bwrites);
 #endif
     return liberados;
 }
