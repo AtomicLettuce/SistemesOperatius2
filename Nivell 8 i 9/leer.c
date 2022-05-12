@@ -21,22 +21,27 @@ int main(int argc, char **argv)
     {
         return -1;
     }
-    leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);
-    while (leidos > 0)
+    if (bread(0, &SB) != -1)
     {
-
-        write(1, buffer_texto ,leidos);
-        offset += tambuffer;
-        memset(buffer_texto, 0, tambuffer);
-        t_leidos  += leidos;
         leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);
-
+        while (leidos > 0)
+        {
+            write(1, buffer_texto ,leidos);
+            offset = offset + tambuffer;
+            memset(buffer_texto, 0, tambuffer);
+            t_leidos  += leidos;
+            leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);
+        }
+        sprintf(string, "\ntotal_leidos %d\n", t_leidos);
+        write(2, string, strlen(string));
+        mi_stat_f(ninodo, &p_stat);
+        sprintf(string, "tamEnBytesLog %d\n", p_stat.tamEnBytesLog);
+        write(2, string, strlen(string));
+    }else
+    {
+        perror("ERROR");
+        return -1;
     }
-    sprintf(string, "\ntotal_leidos %d\n", t_leidos);
-    write(2, string, strlen(string));
-    mi_stat_f(ninodo, &p_stat);
-    sprintf(string, "tamEnBytesLog %d\n", p_stat.tamEnBytesLog);
-    write(2, string, strlen(string));    
     if (bumount() == -1)
     {
         return -1;
