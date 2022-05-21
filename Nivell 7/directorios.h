@@ -1,4 +1,4 @@
-#include "ficheros_basico.h"
+#include "ficheros.h"
 #include "debugging.h"
 #define TAMNOMBRE 60
 

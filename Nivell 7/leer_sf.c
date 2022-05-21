@@ -1,4 +1,4 @@
-#include "ficheros_basico.h"
+#include "directorios.h"
 #include "debugging.h"
 
 int main(int argc, char **argv)
