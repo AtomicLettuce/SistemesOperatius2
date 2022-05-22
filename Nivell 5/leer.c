@@ -4,42 +4,35 @@ int main(int argc, char **argv)
     if (argc != 3)
     {
         printf("Sintaxis: leer <nombre_dispositivo><ninodos>\n");
-        return -1;
+        return 0;
     } 
-    struct superbloque SB;
     struct STAT p_stat;
     char string[128];
     char *camino = argv[1];
     unsigned int ninodo = atoi(argv[2]);
     unsigned int leidos, offset = 0;
     unsigned int t_leidos = 0;
-    void *buffer_texto = malloc(BLOCKSIZE);
-    memset(buffer_texto, 0, BLOCKSIZE);
+    int tambuffer = 1500;
+    char buffer_texto[tambuffer];
+    memset(buffer_texto, 0, tambuffer);
     if (bmount(camino) == -1)
     {
         return -1;
     }
-    if (bread(0, &SB) != -1)
+    leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);
+    while (leidos > 0)
     {
-        leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
-        while (leidos > 0)
-        {
-            write(1, buffer_texto ,leidos);
-            offset = offset + BLOCKSIZE;
-            memset(buffer_texto, 0, BLOCKSIZE);
-            t_leidos  += leidos;
-            leidos = mi_read_f(ninodo, buffer_texto, offset, BLOCKSIZE);
-        }
-        sprintf(string, "\ntotal_leidos %d\n", t_leidos);
-        write(2, string, strlen(string));
-        mi_stat_f(ninodo, &p_stat);
-        sprintf(string, "tamEnBytesLog %d\n", p_stat.tamEnBytesLog);
-        write(2, string, strlen(string));
-    }else
-    {
-        perror("ERROR");
-        return -1;
+        write(1, buffer_texto ,leidos);
+        offset += tambuffer;
+        memset(buffer_texto, 0, tambuffer);
+        t_leidos  += leidos;
+        leidos = mi_read_f(ninodo, buffer_texto, offset, tambuffer);
     }
+    sprintf(string, "\ntotal_leidos %d\n", t_leidos);
+    write(2, string, strlen(string));
+    mi_stat_f(ninodo, &p_stat);
+    sprintf(string, "tamEnBytesLog %d\n", p_stat.tamEnBytesLog);
+    write(2, string, strlen(string));
     if (bumount() == -1)
     {
         return -1;

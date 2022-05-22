@@ -28,7 +28,7 @@ int main(int argc, char **argv)
         }
 
         // Desmontar dispositivo
-        if (bmount() == -1) {
+        if (bumount() == -1) {
 			
             perror("ERROR");
 			return -1;
