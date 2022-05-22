@@ -31,6 +31,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             *tipo = 'd';
             // Copiamos el resto de la ruta en el puntero final
             strcpy(final, camino + strlen(inicial) + 1);
+            return 1;
         }
         // Caso fichero
         else
@@ -41,8 +42,10 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             strcpy(final, "");
             // Si es un fichero lo ponemos sin el "/" inicial
             strcpy(inicial, camino + 1);
+            return 0;
         }
     }
+
 }
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
@@ -139,7 +142,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             break;
 
         case 1:
-            if (inodo_dir.tipo = 'f')
+            if (inodo_dir.tipo == 'f')
             {
                 return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO;
             }
@@ -150,7 +153,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             else
             {
                 strcpy(entrada.nombre, inicial);
-                if (tipo = 'd')
+                if (tipo == 'd')
                 {
                     if (strcmp(final, "/") == 0)
                     {
@@ -306,15 +309,52 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
             // return ERROR ????
             return nbytesEscritos;
         }
+#if DEBUGN9
+        printf("[mi_write() --> Actualizamos la caché de escritura]\n");
+#endif
+        strcpy(UltimaEntrada.camino, camino);
+        UltimaEntrada.p_inodo = p_inodo;
     }
 
     nbytesEscritos = mi_write_f(p_inodo, buf, offset, nbytes);
 
-#if DEBUGN9
-    printf("[mi_write() --> Actualizamos la caché de escritura]\n");
-#endif
-    strcpy(UltimaEntrada.camino, camino);
-    UltimaEntrada.p_inodo = p_inodo;
-
     return nbytesEscritos;
+}
+
+int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes)
+{
+    int nBytesLeidos = 0;
+    unsigned int p_inodo;
+
+    // Comprobamos si coincide con la ultima entrada
+    if (strcmp(UltimaEntrada.camino, camino) == 0)
+    {
+        p_inodo = UltimaEntrada.p_inodo;
+#if DEBUGN9
+        printf("[mi_read()--> Utilizamos la caché de escritura en vez de llamar a buscar_entrada()]\n");
+#endif
+    } // Caso en el que no coincide con la ultima entrada y tendremos que llamar a buscar_entrada()
+    else
+    {
+        unsigned int p_inodo_dir = 0;
+        unsigned int p_entrada = 0;
+        int error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 0);
+
+        // Caso en el que ha ocurrido algun error
+        if (error < 0)
+        {
+            mostrar_error_buscar_entrada(error);
+            // return ERROR ????
+            return nBytesLeidos;
+        }
+#if DEBUGN9
+        printf("[mi_write() --> Actualizamos la caché de escritura]\n");
+#endif
+        strcpy(UltimaEntrada.camino, camino);
+        UltimaEntrada.p_inodo = p_inodo;
+    }
+
+
+        nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
+        return nBytesLeidos;    
 }

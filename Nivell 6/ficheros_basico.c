@@ -727,7 +727,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 #if DEBUGN4
             printf("[traducir_bloque_inodo() → punteros_nivel1[1] = %d (reservado BF %u para BL %u)]\n", ptr, ptr, nblogico);
 #endif
-            break;
         }
         // printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
         return ptr;

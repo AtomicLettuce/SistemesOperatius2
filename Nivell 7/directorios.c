@@ -2,6 +2,8 @@
 #include "debugging.h"
 #include <string.h>
 
+
+
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 {
 
@@ -29,6 +31,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             *tipo = 'd';
             // Copiamos el resto de la ruta en el puntero final
             strcpy(final, camino + strlen(inicial) + 1);
+            return 1;
         }
         // Caso fichero
         else
@@ -39,6 +42,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             strcpy(final, "");
             // Si es un fichero lo ponemos sin el "/" inicial
             strcpy(inicial, camino + 1);
+            return 0;
         }
     }
 }
@@ -137,7 +141,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             break;
 
         case 1:
-            if (inodo_dir.tipo = 'f')
+            if (inodo_dir.tipo == 'f')
             {
                 return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO;
             }
@@ -148,7 +152,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             else
             {
                 strcpy(entrada.nombre, inicial);
-                if (tipo = 'd')
+                if (tipo == 'd')
                 {
                     if (strcmp(final, "/") == 0)
                     {
