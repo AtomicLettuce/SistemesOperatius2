@@ -45,7 +45,6 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             return 0;
         }
     }
-
 }
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
@@ -354,7 +353,57 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
         UltimaEntrada.p_inodo = p_inodo;
     }
 
+    nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
+    return nBytesLeidos;
+}
+// Nivell 10
 
-        nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
-        return nBytesLeidos;    
+int mi_link(const char *camino1, const char *camino2)
+{
+    struct inodo inodo1;
+    unsigned int p_inodo1 = 0;
+    unsigned int p_inodo_dir1 = 0;
+    unsigned int p_entrada1 = 0;
+    unsigned int p_inodo2 = 0;
+    unsigned int p_inodo_dir2 = 0;
+    unsigned int p_entrada2 = 0;
+    int error;
+    if ((error = buscar_entrada(camino1, p_inodo_dir1, p_inodo1, p_entrada1, 0, 0)) < 0)
+    {
+        mostrar_error_buscar_entrada(error);
+        return ERROR;
+    }
+    // Leemos inodo
+    leer_inodo(p_inodo1, &inodo1);
+    // Comprobamos permisos del inodo
+    if ((inodo1.permisos & 4) != 4)
+    {
+        printf("[mi_link() -> Error de permisos]");
+        return ERROR;
+    }
+
+    // Comprobamos que camino 2 no exista
+    if ((error = buscar_entrada(camino2, p_inodo_dir2, p_inodo2, p_entrada2, 1, 6)) < 0)
+    {
+        mostrar_error_buscar_entrada(error);
+        return ERROR;
+    }
+    // Leemos la entrada creada en camino2
+    struct entrada entrada;
+    mi_read_f(p_inodo2, &entrada, (p_entrada2 * TAMENTRADA), TAMENTRADA);
+
+    // Escribimos la entrada modificada
+    entrada.ninodo=p_inodo1;
+    mi_write_f(p_inodo_dir2,&entrada,(p_entrada2*TAMENTRADA),TAMENTRADA);
+
+    // Liberamos inodo que se ha reservado asociado a la entrada (inodo2)
+    liberar_inodo(p_inodo2);
+
+    // Actualizamos datos del inodo
+    inodo1.ctime=time(NULL);
+    inodo1.nlinks++;
+    // Aztualizamos los cambios en el dispositivo
+    escribir_inodo(p_inodo1,&inodo1);
+
+    return 0;
 }
