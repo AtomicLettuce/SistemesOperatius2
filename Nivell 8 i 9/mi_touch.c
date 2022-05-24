@@ -20,6 +20,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // Comprobamos si es un fichero
     if (argv[3][strlen(argv[3]) - 1] == '/')
     {
         
