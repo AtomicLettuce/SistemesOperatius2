@@ -393,17 +393,17 @@ int mi_link(const char *camino1, const char *camino2)
     mi_read_f(p_inodo2, &entrada, (p_entrada2 * TAMENTRADA), TAMENTRADA);
 
     // Escribimos la entrada modificada
-    entrada.ninodo=p_inodo1;
-    mi_write_f(p_inodo_dir2,&entrada,(p_entrada2*TAMENTRADA),TAMENTRADA);
+    entrada.ninodo = p_inodo1;
+    mi_write_f(p_inodo_dir2, &entrada, (p_entrada2 * TAMENTRADA), TAMENTRADA);
 
     // Liberamos inodo que se ha reservado asociado a la entrada (inodo2)
     liberar_inodo(p_inodo2);
 
     // Actualizamos datos del inodo
-    inodo1.ctime=time(NULL);
+    inodo1.ctime = time(NULL);
     inodo1.nlinks++;
     // Aztualizamos los cambios en el dispositivo
-    escribir_inodo(p_inodo1,&inodo1);
+    escribir_inodo(p_inodo1, &inodo1);
 
     return 0;
 }
