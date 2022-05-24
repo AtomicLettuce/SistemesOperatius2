@@ -1,5 +1,6 @@
-#include "directorios.h" // Est incluye ficheros.h , ficheros_basico.h y bloques .h
+#include "directorios.h"
 #include "debugging.h"
+
 void mostrar_buscar_entrada(char *camino, char reservar);
 
 void mostrar_buscar_entrada(char *camino, char reservar)
@@ -13,21 +14,15 @@ void mostrar_buscar_entrada(char *camino, char reservar)
     {
         mostrar_error_buscar_entrada(error);
     }
-    printf("**\n");
+    printf("*******************************************\n");
     return;
 }
+
 
 int main(int argc, char **argv)
 {
     struct superbloque SB;
     char *camino = argv[1];
-#if DEBUGN3 || DEBUGN4
-    struct tm *ts;
-    char atime[80];
-    char mtime[80];
-    char ctime[80];
-#endif
-
     if (argc != 2)
     {
         printf("ERROR: ");
@@ -126,6 +121,11 @@ int main(int argc, char **argv)
 #endif
 
 #if DEBUGN4
+        struct tm *ts;
+        char atime[80];
+        char mtime[80];
+        char ctime[80];
+
         struct inodo inodoN4;
         unsigned int ninodoN4 = reservar_inodo('f', 6);
 
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
             perror("ERROR: ");
             return ERROR;
         }
-        printf("\n\nSB.posPrimerInodoLibre = %u\n", SB.posPrimerInodoLibre);
+        printf("\n\nSB.posPrimerInodoLibre = %u\n",SB.posPrimerInodoLibre);
 #endif
 #if DEBUGN7
         // Mostrar creación directorios y errores
