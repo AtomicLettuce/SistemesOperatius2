@@ -91,6 +91,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // Comprobamos si tiene permisos de lectura
     if ((inodo_dir.permisos & 4) != 4)
     {
+        fprintf(stdout,"[buscar_entrada()→ El inodo %d no tiene permisos de lectura\n",*p_inodo_dir);
         return ERROR_PERMISO_LECTURA;
     }
     memset(&entrada, 0, sizeof(entrada));
@@ -337,8 +338,9 @@ int mi_dir(const char *camino, char *buffer, char tipo)
                 return ERROR;
             }
 
-        
-            sprintf(aux, "%c\t", inodo.tipo);
+           
+            sprintf(aux,  "%c\t", inodo.tipo);
+         
             strcat(buffer, aux);
             if (inodo.permisos & 4)
                 strcat(buffer, "r");
@@ -356,13 +358,21 @@ int mi_dir(const char *camino, char *buffer, char tipo)
             strcat(buffer, "\t");
 
             tm = localtime(&inodo.mtime);
-            sprintf(aux, "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+            sprintf(aux,  "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
             strcat(buffer, aux);
-            sprintf(aux, "%d\t", inodo.tamEnBytesLog);
+
+             if(inodo.tipo=='d'){
+
+                 sprintf(aux, "%d\t" AZUL_T, inodo.tamEnBytesLog);
+            }else{
+                 sprintf(aux, "%d\t" VERDE_T, inodo.tamEnBytesLog);
+                 
+            }
+           
             strcat(buffer, aux);
 
             strcat(buffer, entrada.nombre);
-            strcat(buffer, "\n");
+            strcat(buffer, RESET_COLOR"\n");
         }
 
         return num_entradas;
