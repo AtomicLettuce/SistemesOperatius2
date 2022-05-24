@@ -2,8 +2,6 @@
 #include "debugging.h"
 #include <string.h>
 
-
-
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 {
 
@@ -31,7 +29,6 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             *tipo = 'd';
             // Copiamos el resto de la ruta en el puntero final
             strcpy(final, camino + strlen(inicial) + 1);
-            return 1;
         }
         // Caso fichero
         else
@@ -42,10 +39,12 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
             strcpy(final, "");
             // Si es un fichero lo ponemos sin el "/" inicial
             strcpy(inicial, camino + 1);
-            return 0;
         }
     }
+    return 0;
 }
+
+
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
 {
@@ -75,11 +74,10 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 
     if (extraer_camino(camino_parcial, inicial, final, &tipo) == ERROR)
     {
-        perror("ERROR: ");
         return ERROR_CAMINO_INCORRECTO;
     }
 #if DEBUGN7
-    printf("[buscar_entrada()-> inicial:%s final:%s,reservar%i]", inicial, final, reservar);
+    fprintf(stdout,"[buscar_entrada()-> inicial:%s final:%s,reservar: %i]\n", inicial, final, reservar);
 #endif
     // buscamos la entrada cuyo nombre se encuentra en inicial
     if (leer_inodo(*p_inodo_dir, &inodo_dir) == ERROR)
@@ -92,46 +90,33 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     {
         return ERROR_PERMISO_LECTURA;
     }
-    // Declaración de búfer que contiene tantas entradas como puede haber en un bloque
-    struct entrada buf[BLOCKSIZE / TAMENTRADA];
-    // inicializar el buffer de lectura con 0s
-    memset(buf, 0, BLOCKSIZE);
-
+    memset(&entrada, 0, sizeof(entrada));
     // Calculamos cuantas entradas tiene el inodo_dir
-    cant_entradas_inodo = inodo_dir.tamEnBytesLog / TAMENTRADA;
+    cant_entradas_inodo = inodo_dir.tamEnBytesLog / sizeof(entrada);
     // Num de entrada inicial
     num_entrada_inodo = 0;
     // Variable que usaremos para iterar
     int offset = 0;
-    int i = 0;
 
     if (cant_entradas_inodo > 0)
     {
-        if (mi_read_f(*p_inodo_dir, buf, offset, BLOCKSIZE) == ERROR)
+        if (mi_read_f(*p_inodo_dir, &entrada, offset, sizeof(entrada)) == ERROR)
         {
             perror("ERROR: ");
             return ERROR;
         }
-        while ((num_entrada_inodo < cant_entradas_inodo) && (strcmp(inicial, buf[i % (BLOCKSIZE / TAMENTRADA)].nombre) != 0))
+        while ((num_entrada_inodo < cant_entradas_inodo) && (strcmp(inicial, entrada.nombre) != 0))
         {
             num_entrada_inodo++;
-            // Para tener que leer del dispositivo solo las veces que sean necesarias
-            i++;
-            if (i % (BLOCKSIZE / TAMENTRADA) == 0)
-            {
-                offset = offset + BLOCKSIZE;
-                if (mi_read_f(*p_inodo_dir, buf, offset, BLOCKSIZE) == ERROR)
+            offset +=sizeof(entrada);
+            memset(&entrada, 0, sizeof(entrada));
+            if (mi_read_f(*p_inodo_dir, &entrada, offset, sizeof(entrada)) == ERROR)
                 {
                     perror("ERROR: ");
                     return ERROR;
                 }
             }
         }
-    }
-    // Copiamos el contenido de la entrada a nuestra variable entrada para poder trabajar de forma mas clara
-    entrada.ninodo = buf[i % (BLOCKSIZE / TAMENTRADA)].ninodo;
-    strcpy(entrada.nombre, buf[i % (BLOCKSIZE / TAMENTRADA)].nombre);
-
     if (strcmp(inicial, entrada.nombre) != 0)
     {
         switch (reservar)
@@ -163,7 +148,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                             return ERROR;
                         }
 #if DEBUGN7
-                        printf("[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]", reservado, tipo, permisos, inicial);
+                        fprintf(stdout, "[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]\n", reservado, tipo, permisos, inicial);
 #endif
                         entrada.ninodo = reservado;
                     }
@@ -181,13 +166,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                         return ERROR;
                     }
 #if DEBUGN7
-                    printf("[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]", reservado, tipo, permisos, inicial);
+                    fprintf(stdout,"[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]\n", reservado, tipo, permisos, inicial);
 #endif
                     entrada.ninodo = reservado;
                 }
-                // Actualizamos el búfer de entradas para poder escribirlo como toca
-                buf[i % (BLOCKSIZE / TAMENTRADA)].ninodo = entrada.ninodo;
-                if (mi_write_f(*p_inodo_dir, buf, offset, BLOCKSIZE) == ERROR)
+                if (mi_write_f(*p_inodo_dir, &entrada, offset, sizeof(entrada)) == ERROR)
                 {
                     if (entrada.ninodo != -1)
                     {
@@ -200,10 +183,10 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                     return EXIT_FAILURE;
                 }
 #if DEBUGN7
-                printf("[buscar_entrada()-> creada entrada %s, %i", entrada.nombre, entrada.ninodo);
+                fprintf(stdout, "[buscar_entrada()-> creada entrada %s, %i]\n", entrada.nombre, entrada.ninodo);
 #endif
             }
-            break;
+            //break;
         }
     }
 
