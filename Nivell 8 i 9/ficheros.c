@@ -20,7 +20,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     if ((inodo.permisos & 2) != 2)
     {
         fprintf(stderr,"No hay permisos de lectura\n");
-        return ERROR;
+        return nbytesEscritos;
     }
     else
     {
