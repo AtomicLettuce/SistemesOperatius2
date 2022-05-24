@@ -562,13 +562,16 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
             return nBytesLeidos;
         }
 #if DEBUGN9
-        printf("[mi_write() --> Actualizamos la caché de escritura]\n");
+        printf("[mi_read() --> Actualizamos la caché de escritura]\n");
 #endif
+
+        // Actualizamos la última entrada
         strcpy(UltimaEntrada.camino, camino);
         UltimaEntrada.p_inodo = p_inodo;
     }
 
     nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
+    //fwrite(buf, sizeof(char), nBytesLeidos, stdout);
     return nBytesLeidos;
 }
 // Nivell 10
@@ -583,7 +586,7 @@ int mi_link(const char *camino1, const char *camino2)
     unsigned int p_inodo_dir2 = 0;
     unsigned int p_entrada2 = 0;
     int error;
-    if ((error = buscar_entrada(camino1, p_inodo_dir1, p_inodo1, p_entrada1, 0, 0)) < 0)
+    if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, 0, 0)) < 0)
     {
         mostrar_error_buscar_entrada(error);
         return ERROR;
@@ -598,7 +601,7 @@ int mi_link(const char *camino1, const char *camino2)
     }
 
     // Comprobamos que camino 2 no exista
-    if ((error = buscar_entrada(camino2, p_inodo_dir2, p_inodo2, p_entrada2, 1, 6)) < 0)
+    if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, 1, 6)) < 0)
     {
         mostrar_error_buscar_entrada(error);
         return ERROR;

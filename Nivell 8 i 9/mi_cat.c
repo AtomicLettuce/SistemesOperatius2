@@ -1,5 +1,5 @@
 #include "directorios.h"
-#define BUFFERSIZE 1420
+#define BUFFERSIZE 1024
 
 // Sintaxis Sintaxis: ./mi_cat <disco> </ruta_fichero>
 int main(int argc, char **argv)
@@ -17,36 +17,34 @@ int main(int argc, char **argv)
         bmount(argv[1]);
 
         // comprobar que la ruta se corresponda a un fichero
-        char camino[strlen(argv[2])];
-        strcpy(camino, argv[2]);
 
         // Caso en el que se trata de un fichero
-        if (camino[strlen(camino) - 1] != '/')
+        if (argv[2][strlen(argv[2]) - 1] != '/')
         {
-            unsigned char buffer_texto[BUFFERSIZE];
-            unsigned char buffer_aux[BUFFERSIZE];
-            // Posam a 0 totes les posicions del buffer.
-            memset(buffer_texto, 0, BUFFERSIZE);
-            memset(buffer_aux, 0, BUFFERSIZE);
-            unsigned int leidos;
-            unsigned int total_leidos = 0;
-            unsigned int offset = 0;
-            char string[128];
-            leidos = mi_read(argv[2], buffer_texto, offset, BUFFERSIZE);
-            offset += BUFFERSIZE;
+            int offset = 0;
+            char buffer[BUFFERSIZE];
+            int nbytesleidos = 0;
+            int leidos;
+            memset(buffer, 0, BUFFERSIZE);
+            char buf2 [BUFFERSIZE];
+            memset(buf2,'A',BUFFERSIZE);
 
-            while (leidos > 0)
+
+
+            while ((leidos = mi_read(argv[2], buffer, offset * TAMBUFFER, TAMBUFFER)) > 0)
             {
-                write(1, buffer_texto, leidos);
-                memset(buffer_texto, 0, BUFFERSIZE);
-                total_leidos += leidos;
-                leidos = mi_read(argv[2], buffer_texto, offset, BUFFERSIZE);
-                offset += BUFFERSIZE;
+                //fwrite(buf2, sizeof(char), leidos, stdout);
+                nbytesleidos += leidos;
+                offset++;
+                memset(buffer, 0, BUFFERSIZE);
             }
-            sprintf(string, "\n");
-            write(2, string, strlen(string));
-            sprintf(string, "Total_leidos: %d\n", total_leidos);
-            write(2, string, strlen(string));
+            if (nbytesleidos < 0)
+            {
+                nbytesleidos = 0;
+            }
+            printf("\nTotal leidos: %d\n", nbytesleidos);
+            bumount();
+            return 0;
         }
         // Caso en el que no es un fichero
         else

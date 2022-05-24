@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
     // Comprobamos cantidad de argumentos
-    if(argc==4){
+    if(argc==5){
 
         // Montar el dispositivo
         bmount(argv[1]);
@@ -14,15 +14,15 @@ int main(int argc, char **argv)
 
         // Caso en el que no se especifica un fichero
         if(camino[strlen(camino)-1]=='/'){
-            printf("ERROR DE RUTA: La ruta no acaba en un fichero");
+            printf("ERROR DE RUTA: La ruta no acaba en un fichero\n");
         }
         // Escribimos el texto
         else{
             char texto[strlen(argv[3])];
             strcpy(texto,argv[3]);
-            printf("Longitud del texto: %li", strlen(texto));
+            printf("Longitud del texto: %li\n", strlen(texto));
             
-            printf("Bytes escritos: %i",mi_write(camino, camino, atoi(argv[4]), strlen(argv[3])));
+            printf("Bytes escritos: %i\n",mi_write(camino, camino, atoi(argv[4]), strlen(argv[3])));
         }
         // Desmontamos el dispositivo
         bumount(argv[1]);
