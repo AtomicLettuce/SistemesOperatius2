@@ -14,13 +14,17 @@ int main(int argc, char **argv)
         // Montamos dispositivo
         bmount(argv[1]);
 
-        if (argv[2][strlen(argv[2] - 1)] != '/' && argv[2][strlen(argv[2] - 1)] != '/')
+        char *ruta1 = argv[2];
+        char *ruta2 =argv[3];
+        
+
+        if(strcmp(&ruta1[strlen(ruta1)-1],"/") == 0 || strcmp(&ruta2[strlen(ruta2)-1],"/") == 0)
         {
-            mi_link(argv[1],argv[2]);
+            printf("ERROR: ESPECIFICA FICHEROS\n");
         }
         else
         {
-            printf("ESPECIFICA FICHEROS");
+            mi_link(argv[1],argv[2]);
         }
 
         // Desmontamos el dispositivo
