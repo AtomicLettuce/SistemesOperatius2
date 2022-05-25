@@ -13,22 +13,19 @@ int main(int argc, char **argv)
     {
         // Montamos dispositivo
         bmount(argv[1]);
-
-        char *ruta1 = argv[2];
-        char *ruta2 =argv[3];
         
 
-        if(strcmp(&ruta1[strlen(ruta1)-1],"/") == 0 || strcmp(&ruta2[strlen(ruta2)-1],"/") == 0)
+        if(strcmp(&argv[2][strlen(argv[2])-1],"/") == 0 || strcmp(&argv[3][strlen(argv[3])-1],"/") == 0)
         {
             printf("ERROR: ESPECIFICA FICHEROS\n");
         }
         else
         {
-            mi_link(argv[1],argv[2]);
+            mi_link(argv[2],argv[3]);
         }
 
         // Desmontamos el dispositivo
-        bumount(argv[1]);
+        bumount();
         return 0;
     }
 }
