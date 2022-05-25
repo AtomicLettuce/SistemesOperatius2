@@ -6,7 +6,6 @@ int main(int argc, char **argv)
         printf("Sintaxis: leer <nombre_dispositivo><ninodos>\n");
         return -1;
     } 
-    struct superbloque SB;
     struct STAT p_stat;
     char string[128];
     char *camino = argv[1];
