@@ -604,11 +604,13 @@ int mi_link(const char *camino1, const char *camino2)
     }
     // Leemos la entrada creada en camino2
     struct entrada entrada;
-    mi_read_f(p_inodo2, &entrada, (p_entrada2 * TAMENTRADA), TAMENTRADA);
+    int tamentrada = sizeof(entrada);
+    memset(&entrada, 0, tamentrada);
+    mi_read_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada);
 
     // Escribimos la entrada modificada
     entrada.ninodo = p_inodo1;
-    mi_write_f(p_inodo_dir2, &entrada, (p_entrada2 * TAMENTRADA), TAMENTRADA);
+    mi_write_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada);
 
     // Liberamos inodo que se ha reservado asociado a la entrada (inodo2)
     liberar_inodo(p_inodo2);
