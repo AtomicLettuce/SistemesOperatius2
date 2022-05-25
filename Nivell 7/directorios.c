@@ -43,6 +43,11 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
     }
     return 0;
 }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 74381f3f199b5c9b7a92837d77ddf84c0562cf2f
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
 {

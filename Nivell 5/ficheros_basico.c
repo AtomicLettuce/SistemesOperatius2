@@ -34,7 +34,7 @@ int initMB()
     if (bread(0, &SB) == -1)
     {
 
-        perror("Error");
+        perror("ERROR: ");
         return -1;
     }
 
@@ -43,7 +43,7 @@ int initMB()
     {
         if (bwrite(i, buf) == -1)
         {
-            perror("Error");
+            perror("ERROR: ");
             return -1;
         }
     }
@@ -72,7 +72,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
 
     if (bwrite(posSB, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
     return 0;
@@ -173,7 +173,7 @@ int initAI()
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -188,7 +188,7 @@ int initAI()
         if (bread(i, inodos) == ERROR)
         {
 
-            perror("Error");
+            perror("ERROR: ");
             return ERROR;
         }
 
@@ -217,7 +217,7 @@ int initAI()
         // Escribimos el bloque de inodos i en el dispositivo virtual
         if (bwrite(i, inodos) == ERROR)
         {
-            perror("Error");
+            perror("ERROR: ");
             return ERROR;
         }
     }
@@ -230,7 +230,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -247,7 +247,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
     unsigned char bufferMB[BLOCKSIZE];
     if (bread(nbloqueabs, bufferMB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -291,7 +291,7 @@ char leer_bit(unsigned int nbloque)
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -308,7 +308,7 @@ char leer_bit(unsigned int nbloque)
     unsigned char bufferMB[BLOCKSIZE];
     if (bread(nbloqueabs, bufferMB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 #if DEBUGN3
@@ -441,7 +441,7 @@ int liberar_bloque(unsigned int nbloque)
     struct superbloque SB;
     if (bread(posSB, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -451,7 +451,7 @@ int liberar_bloque(unsigned int nbloque)
     // Salvamos el SB
     if (bwrite(posSB, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -464,7 +464,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
     // Calculamos el numero de bloque absoluto que le corresponde al inodo que queremos escribir
@@ -475,7 +475,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo *inodo)
     // Leemos el bloque en el que está el inodo
     if (bread(bloqueabs, inodos) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
     // Sustituimos el inodo antiguo por el que queremos escribir
@@ -494,7 +494,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo)
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
 
@@ -518,7 +518,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
     struct superbloque SB;
     if (bread(0, &SB) == ERROR)
     {
-        perror("Error");
+        perror("ERROR: ");
         return ERROR;
     }
     if (SB.cantInodosLibres > 0)

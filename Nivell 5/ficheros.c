@@ -280,7 +280,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
     struct inodo inodo;
     if (leer_inodo(ninodo, &inodo) < 0)
     {
-        perror("Error");
+        perror("ERROR: ");
         return -1;
     }
 
@@ -306,7 +306,7 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
     // Leemos el inodo del correspondiente nº de inodo
     if (leer_inodo(ninodo, &inodo) < 0)
     {
-        perror("Error");
+        perror("ERROR: ");
         return -1;
     }
 
@@ -318,7 +318,7 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
 
     if (escribir_inodo(ninodo, &inodo) < 0)
     {
-        perror("Error");
+        perror("ERROR: ");
         return -1;
     }
 
