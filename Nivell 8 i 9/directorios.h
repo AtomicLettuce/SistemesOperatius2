@@ -1,8 +1,8 @@
 #include "ficheros.h"
 
-#define TAMENTRADA 60 + 4
 #define PROFUNDIDAD 32
 #define TAMNOMBRE 60
+#define TAMENTRADA 64
 #define TAMFILA 100
 #define TAMBUFFER (TAMFILA*1000) //suponemos un máx de 1000 entradas, aunque debería ser 
 #define ERROR_CAMINO_INCORRECTO -1
