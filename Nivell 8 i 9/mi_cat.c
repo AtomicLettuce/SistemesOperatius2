@@ -26,14 +26,10 @@ int main(int argc, char **argv)
             int nbytesleidos = 0;
             int leidos;
             memset(buffer, 0, BUFFERSIZE);
-            char buf2 [BUFFERSIZE];
-            memset(buf2,'A',BUFFERSIZE);
 
-
-
-            while ((leidos = mi_read(argv[2], buffer, offset * TAMBUFFER, TAMBUFFER)) > 0)
+            while ((leidos = mi_read(argv[2], buffer, offset * BUFFERSIZE, BUFFERSIZE)) > 0)
             {
-                //fwrite(buf2, sizeof(char), leidos, stdout);
+                fwrite(buffer, sizeof(char), leidos, stdout);
                 nbytesleidos += leidos;
                 offset++;
                 memset(buffer, 0, BUFFERSIZE);
