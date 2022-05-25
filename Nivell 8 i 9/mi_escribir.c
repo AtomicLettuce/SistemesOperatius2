@@ -4,7 +4,8 @@
 int main(int argc, char **argv)
 {
     // Comprobamos cantidad de argumentos
-    if(argc==5){
+    if (argc == 5)
+    {
 
         // Montar el dispositivo
         bmount(argv[1]);
@@ -16,6 +17,7 @@ int main(int argc, char **argv)
         unsigned int offset = atoi(argv[4]);
 
         // Caso en el que no se especifica un fichero
+
         if (argv[2][strlen(argv[2])-1]=='/'){
             fprintf(stderr, "Error: la ruta se corresponde a un directorio");
             exit(-1);
@@ -31,8 +33,7 @@ int main(int argc, char **argv)
         // Mala Sintaxis
         printf("Sintaxis : mi_escribir <disco> </ruta_fichero> <texto> <offset>\n");
 	    exit(-1);
+
     }
-
-    return 0;
-
+  return 0;
 }

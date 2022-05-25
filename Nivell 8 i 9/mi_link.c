@@ -2,9 +2,9 @@
 
 // Sintaxis: ./mi_link disco /ruta_fichero_original /ruta_enlace
 
-int main(int argv, char **argv)
+int main(int argc, char **argv)
 {
-    if (argv != 4)
+    if (argc != 4)
     {
         printf("Sintaxis: ./mi_link disco /ruta_fichero_original /ruta_enlace");
         return -1;
