@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     bmount(argv[1]);
     if(argv[2][strlen(argv[2])-1]=='/' || argv[3][strlen(argv[3])-1]=='/')
     {
-        printf("ERROR: ESPECIFICA FICHEROS intermedios\n");
+        printf("ERROR: ESPECIFICA FICHEROS\n");
     }
     mi_link(argv[2],argv[3]);
     bumount();
