@@ -26,5 +26,6 @@ int main(int argc, char **argv)
     else
     {
         printf("Sintaxis: :/mi_rm disco /ruta");
+        return -1;
     }
 }

@@ -382,7 +382,7 @@ int mi_dir(const char *camino, char *buffer, char tipo)
 
         memset(&entrada, 0, sizeof(entrada));
         // Obtenemos la entrada del indodo
-        if (mi_read_f(p_inodo, &entrada, offset, sizeof(entrada)) < 0)
+        if (mi_read_f(p_inodo_dir, &entrada, offset, sizeof(entrada)) < 0)
         {
 
             return ERROR;
