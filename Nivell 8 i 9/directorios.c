@@ -2,7 +2,6 @@
 #include "debugging.h"
 #include <string.h>
 
-
 struct UltimaEntrada UltimaEntrada;
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
@@ -45,9 +44,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
         }
     }
     return 0;
-
 }
-
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
@@ -81,7 +78,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         return ERROR_CAMINO_INCORRECTO;
     }
 #if DEBUGN7
-    fprintf(stdout,"[buscar_entrada()-> inicial:%s final:%s,reservar: %i]\n", inicial, final, reservar);
+    fprintf(stdout, "[buscar_entrada()-> inicial:%s final:%s,reservar: %i]\n", inicial, final, reservar);
 #endif
     // buscamos la entrada cuyo nombre se encuentra en inicial
     if (leer_inodo(*p_inodo_dir, &inodo_dir) == ERROR)
@@ -92,7 +89,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // Comprobamos si tiene permisos de lectura
     if ((inodo_dir.permisos & 4) != 4)
     {
-        fprintf(stdout,"[buscar_entrada()→ El inodo %d no tiene permisos de lectura\n",*p_inodo_dir);
+        fprintf(stdout, "[buscar_entrada()→ El inodo %d no tiene permisos de lectura\n", *p_inodo_dir);
         return ERROR_PERMISO_LECTURA;
     }
     memset(&entrada, 0, sizeof(entrada));
@@ -113,15 +110,15 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         while ((num_entrada_inodo < cant_entradas_inodo) && (strcmp(inicial, entrada.nombre) != 0))
         {
             num_entrada_inodo++;
-            offset +=sizeof(entrada);
+            offset += sizeof(entrada);
             memset(&entrada, 0, sizeof(entrada));
             if (mi_read_f(*p_inodo_dir, &entrada, offset, sizeof(entrada)) == ERROR)
-                {
-                    perror("ERROR: ");
-                    return ERROR;
-                }
+            {
+                perror("ERROR: ");
+                return ERROR;
             }
         }
+    }
     if (strcmp(inicial, entrada.nombre) != 0)
     {
         switch (reservar)
@@ -171,7 +168,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                         return ERROR;
                     }
 #if DEBUGN7
-                    fprintf(stdout,"[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]\n", reservado, tipo, permisos, inicial);
+                    fprintf(stdout, "[buscar_entrada()-> reservado inodo %i tipo %c con permisos %i para %s]\n", reservado, tipo, permisos, inicial);
 #endif
                     entrada.ninodo = reservado;
                 }
@@ -191,7 +188,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                 fprintf(stdout, "[buscar_entrada()-> creada entrada %s, %i]\n", entrada.nombre, entrada.ninodo);
 #endif
             }
-            //break;
+            // break;
         }
     }
 
@@ -250,7 +247,7 @@ int mi_creat(const char *camino, unsigned char permisos)
 
     int error;
     unsigned int p_inodo_dir, p_inodo, p_entrada;
-    p_inodo_dir = 0;
+    p_inodo_dir = p_inodo = p_entrada = 0;
 
     error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, permisos);
 
@@ -263,13 +260,13 @@ int mi_creat(const char *camino, unsigned char permisos)
     return 0;
 }
 
-
 int mi_dir(const char *camino, char *buffer, char tipo)
 {
 
     // Variables necesarias para buscar entrada
     unsigned int p_inodo_dir, p_inodo, p_entrada;
-    p_inodo_dir = 0;
+    p_inodo_dir = p_inodo = p_entrada = 0;
+
     int error;
     struct inodo inodo;
 
@@ -306,22 +303,21 @@ int mi_dir(const char *camino, char *buffer, char tipo)
     // Número de entradas
     unsigned int num_entradas;
 
-    
     // Si es un directorio tenemos que poner el contenido de sus entradas en el buffer
     if (inodo.tipo == 'd')
     {
-        
+
         // Calculamos el número de entradas del directorio
         num_entradas = inodo.tamEnBytesLog / sizeof(entrada);
-        
-        if(num_entradas>0){
+
+        if (num_entradas > 0)
+        {
 
             sprintf(aux, "Total: %i\n", num_entradas);
             strcat(buffer, aux);
             strcat(buffer, "Tipo \tModo \tmTime \t\t\tTamaño \tNombre\n----------------------------------------------------------------\n");
-
         }
-       
+
         // Para cada entrada
         for (int i = 0; i < num_entradas; i++)
         {
@@ -339,9 +335,8 @@ int mi_dir(const char *camino, char *buffer, char tipo)
                 return ERROR;
             }
 
-           
-            sprintf(aux,  "%c\t", inodo.tipo);
-         
+            sprintf(aux, "%c\t", inodo.tipo);
+
             strcat(buffer, aux);
             if (inodo.permisos & 4)
                 strcat(buffer, "r");
@@ -359,21 +354,23 @@ int mi_dir(const char *camino, char *buffer, char tipo)
             strcat(buffer, "\t");
 
             tm = localtime(&inodo.mtime);
-            sprintf(aux,  "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+            sprintf(aux, "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
             strcat(buffer, aux);
 
-             if(inodo.tipo=='d'){
+            if (inodo.tipo == 'd')
+            {
 
-                 sprintf(aux, "%d\t" AZUL_T, inodo.tamEnBytesLog);
-            }else{
-                 sprintf(aux, "%d\t" VERDE_T, inodo.tamEnBytesLog);
-                 
+                sprintf(aux, "%d\t" AZUL_T, inodo.tamEnBytesLog);
             }
-           
+            else
+            {
+                sprintf(aux, "%d\t" VERDE_T, inodo.tamEnBytesLog);
+            }
+
             strcat(buffer, aux);
 
             strcat(buffer, entrada.nombre);
-            strcat(buffer, RESET_COLOR"\n");
+            strcat(buffer, RESET_COLOR "\n");
         }
 
         return num_entradas;
@@ -424,7 +421,7 @@ int mi_dir(const char *camino, char *buffer, char tipo)
 int mi_chmod(const char *camino, unsigned char permisos)
 {
     unsigned int p_inodo_dir, p_inodo, p_entrada;
-    p_inodo_dir = 0;
+    p_inodo_dir = p_inodo = p_entrada = 0;
     int error;
 
     error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, permisos);
@@ -447,7 +444,7 @@ int mi_chmod(const char *camino, unsigned char permisos)
 
 int mi_stat(const char *camino, struct STAT *p_stat)
 {
-   
+
     unsigned int p_inodo_dir, p_inodo, p_entrada;
     p_inodo_dir = 0;
     int error;
@@ -455,20 +452,19 @@ int mi_stat(const char *camino, struct STAT *p_stat)
     // Obtenemos en número de inodo
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4)) < 0)
     {
-        //En cas d'error avisam al usuari.
+        // En cas d'error avisam al usuari.
         mostrar_error_buscar_entrada(error);
         return ERROR;
     }
 
-    
     if (mi_stat_f(p_inodo, p_stat) < 0)
     {
 
         printf("Error:  mi_stat_f: error al obtener los datos del inodo");
-         return ERROR;
+        return ERROR;
     }
 
-    // Definimos el formato para imprimir el tiempo 
+    // Definimos el formato para imprimir el tiempo
     struct tm *tm;
     char atime[80];
     char mtime[80];
@@ -571,7 +567,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     }
 
     nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);
-    //fwrite(buf, sizeof(char), nBytesLeidos, stdout);
+    // fwrite(buf, sizeof(char), nBytesLeidos, stdout);
     return nBytesLeidos;
 }
 // Nivell 10
@@ -622,6 +618,109 @@ int mi_link(const char *camino1, const char *camino2)
     inodo1.nlinks++;
     // Aztualizamos los cambios en el dispositivo
     escribir_inodo(p_inodo1, &inodo1);
+
+    return 0;
+}
+
+int mi_unlink(const char *camino)
+{
+
+    // Variables para buscar entrada
+    unsigned int p_inodo_dir, p_inodo, p_entrada;
+    p_inodo_dir = p_inodo = p_entrada = 0;
+    int error;
+
+    // Variables para leer inodos
+    struct inodo inodo;
+    struct inodo inodo_dir;
+
+    // Variabels para leer la entrada
+    struct entrada entrada;
+
+    // Comprobamos que existe la entrada
+    error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4);
+
+    if (error < 0)
+    {
+        mostrar_error_buscar_entrada(error);
+        return ERROR;
+    }
+
+    // Obtenemos la información del inodo del camino
+    if (leer_inodo(p_inodo, &inodo) == -1)
+    {
+        // Error lectura del inodo
+        return ERROR;
+    }
+
+    // Si se trata de un directorio y no está vacío entonces no se puede borrar
+    if (inodo.tipo == 'd' && inodo.tamEnBytesLog != 0)
+    {
+
+        printf("El directorio no está vacío, no se puede borrar \n");
+
+        return -1;
+    }
+
+    //  Leemos el inodo asociado al directorio que contiene la entrada que queremos eliminar
+    if (leer_inodo(p_inodo_dir, &inodo_dir) == -1)
+    {
+        // Error lectura del inodo
+        return ERROR;
+    }
+
+    // Obtenemos el número de entradas de directorio
+    int nEntradas = inodo_dir.tamEnBytesLog / sizeof(entrada);
+
+    // Si no es la última entrada
+    if (p_entrada != (nEntradas - 1))
+    {
+
+        //  Leemos la última entrada
+        if (mi_read_f(p_inodo_dir, &entrada, (nEntradas - 1) * sizeof(entrada), sizeof(entrada)) < 0)
+        {
+            return ERROR;
+        }
+
+        // La escribimos en la posición de la entrada que queremos eliminar
+        if (mi_write_f(p_inodo_dir, &entrada, p_entrada * sizeof(entrada), sizeof(entrada)) < 0)
+        {
+
+            return ERROR;
+        }
+    }
+
+    // Truncamos el inodo a su tamaño menos el tamaño de una entrada
+    if (mi_truncar_f(p_inodo_dir, (inodo_dir.tamEnBytesLog - sizeof(entrada))) < 0)
+    {
+
+        return ERROR;
+    }
+
+    // Decrementamos el número de links del inodo
+    inodo.nlinks--;
+
+    // Si no quedan enlaces
+    if (inodo.nlinks == 0)
+    {
+
+        // Liberaremos el inodo
+        if (liberar_inodo(p_inodo) < 0)
+        {
+
+            return ERROR;
+        }
+    }
+    else
+    {
+
+        // Escribimos el inodo
+        inodo.ctime = time(NULL);
+        if (escribir_inodo(p_inodo, &inodo) < 0)
+        {
+            return ERROR;
+        }
+    }
 
     return 0;
 }
