@@ -270,7 +270,7 @@ int mi_dir(const char *camino, char *buffer, char tipo)
     int error;
     struct inodo inodo;
 
-    error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4);
+    error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 0);
 
     if (error < 0)
     {
@@ -298,7 +298,7 @@ int mi_dir(const char *camino, char *buffer, char tipo)
     struct entrada entrada;
     struct tm *tm;
     char aux[30];
-    // char separador = ,
+    
 
     // Número de entradas
     unsigned int num_entradas;
@@ -450,7 +450,7 @@ int mi_stat(const char *camino, struct STAT *p_stat)
     int error;
 
     // Obtenemos en número de inodo
-    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4)) < 0)
+    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 0)) < 0)
     {
         // En cas d'error avisam al usuari.
         mostrar_error_buscar_entrada(error);
@@ -588,7 +588,10 @@ int mi_link(const char *camino1, const char *camino2)
         return ERROR;
     }
     // Leemos inodo
-    leer_inodo(p_inodo1, &inodo1);
+    if(leer_inodo(p_inodo1, &inodo1)<0){
+        return ERROR;
+
+    }
     // Comprobamos permisos del inodo
     if ((inodo1.permisos & 4) != 4)
     {
@@ -606,20 +609,33 @@ int mi_link(const char *camino1, const char *camino2)
     struct entrada entrada;
     int tamentrada = sizeof(entrada);
     memset(&entrada, 0, tamentrada);
-    mi_read_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada);
+    if (mi_read_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada)<0){
+
+        return ERROR;
+    }
 
     // Escribimos la entrada modificada
     entrada.ninodo = p_inodo1;
-    mi_write_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada);
+    if(mi_write_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada)<0){
+
+
+        return ERROR;
+    }
 
     // Liberamos inodo que se ha reservado asociado a la entrada (inodo2)
-    liberar_inodo(p_inodo2);
+    if(liberar_inodo(p_inodo2)<0){
+
+        return ERROR;
+    }
 
     // Actualizamos datos del inodo
     inodo1.ctime = time(NULL);
     inodo1.nlinks++;
     // Aztualizamos los cambios en el dispositivo
-    escribir_inodo(p_inodo1, &inodo1);
+    if(escribir_inodo(p_inodo1, &inodo1)<0){
+
+        return ERROR;
+    }
 
     return 0;
 }

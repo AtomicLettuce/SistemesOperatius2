@@ -13,12 +13,12 @@ int main(int argc, char **argv)
         
         return -1;
     }
-    struct STAT p_stat;
 
-    if (mi_stat(argv[2], &p_stat) < 0)
+    struct STAT stat;
+
+    if (mi_stat(argv[2], &stat) < 0)
     {
 
-       
         return -1;
     }
 
