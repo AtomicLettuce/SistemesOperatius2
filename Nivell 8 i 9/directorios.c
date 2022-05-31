@@ -89,7 +89,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // Comprobamos si tiene permisos de lectura
     if ((inodo_dir.permisos & 4) != 4)
     {
-        fprintf(stdout, "[buscar_entrada()→ El inodo %d no tiene permisos de lectura\n", *p_inodo_dir);
+        fprintf(stderr, "[buscar_entrada()→ El inodo %d no tiene permisos de lectura\n", *p_inodo_dir);
         return ERROR_PERMISO_LECTURA;
     }
     memset(&entrada, 0, sizeof(entrada));
@@ -172,7 +172,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 #endif
                     entrada.ninodo = reservado;
                 }
-                if (mi_write_f(*p_inodo_dir, &entrada, offset, sizeof(entrada)) == ERROR)
+                if (mi_write_f(*p_inodo_dir, &entrada, inodo_dir.tamEnBytesLog, sizeof(entrada)) == ERROR)
                 {
                     if (entrada.ninodo != -1)
                     {
@@ -245,6 +245,7 @@ void mostrar_error_buscar_entrada(int error)
 int mi_creat(const char *camino, unsigned char permisos)
 {
 
+    mi_waitSem();
     int error;
     unsigned int p_inodo_dir, p_inodo, p_entrada;
     p_inodo_dir = p_inodo = p_entrada = 0;
@@ -254,6 +255,7 @@ int mi_creat(const char *camino, unsigned char permisos)
     if (error < 0)
     {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return ERROR;
     }
 
@@ -309,11 +311,10 @@ int mi_dir(const char *camino, char *buffer, char tipo)
 
         // Calculamos el número de entradas del directorio
         num_entradas = inodo.tamEnBytesLog / sizeof(entrada);
-
+        sprintf(aux, "Total: %i\n", num_entradas);
         if (num_entradas > 0)
         {
 
-            sprintf(aux, "Total: %i\n", num_entradas);
             strcat(buffer, aux);
             strcat(buffer, "Tipo \tModo \tmTime \t\t\tTamaño \tNombre\n----------------------------------------------------------------\n");
         }
@@ -517,7 +518,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
         {
             mostrar_error_buscar_entrada(error);
             // return ERROR ????
-            return nbytesEscritos;
+            return -1;
         }
 #if DEBUGN9
         printf("[mi_write() --> Actualizamos la caché de escritura]\n");
@@ -555,7 +556,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
         {
             mostrar_error_buscar_entrada(error);
             // return ERROR ????
-            return nBytesLeidos;
+            return -1;
         }
 #if DEBUGN9
         printf("[mi_read() --> Actualizamos la caché de escritura]\n");
@@ -574,6 +575,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 
 int mi_link(const char *camino1, const char *camino2)
 {
+    mi_waitSem();
     struct inodo inodo1;
     unsigned int p_inodo1 = 0;
     unsigned int p_inodo_dir1 = 0;
@@ -585,10 +587,12 @@ int mi_link(const char *camino1, const char *camino2)
     if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, 0, 0)) < 0)
     {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return ERROR;
     }
     // Leemos inodo
     if(leer_inodo(p_inodo1, &inodo1)<0){
+        mi_signalSem();
         return ERROR;
 
     }
@@ -596,6 +600,7 @@ int mi_link(const char *camino1, const char *camino2)
     if ((inodo1.permisos & 4) != 4)
     {
         printf("[mi_link() -> Error de permisos]");
+        mi_signalSem();
         return ERROR;
     }
 
@@ -603,28 +608,28 @@ int mi_link(const char *camino1, const char *camino2)
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, 1, 6)) < 0)
     {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return ERROR;
     }
     // Leemos la entrada creada en camino2
     struct entrada entrada;
     int tamentrada = sizeof(entrada);
     memset(&entrada, 0, tamentrada);
-    if (mi_read_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada)<0){
-
+    if (mi_read_f(p_inodo_dir2, &entrada, (p_entrada2 * tamentrada), tamentrada)<0){//pau
+        mi_signalSem();
         return ERROR;
     }
 
     // Escribimos la entrada modificada
     entrada.ninodo = p_inodo1;
-    if(mi_write_f(p_inodo_dir2, &entrada, p_entrada2, tamentrada)<0){
-
-
+    if(mi_write_f(p_inodo_dir2, &entrada, (p_entrada2 * tamentrada), tamentrada)<0){
+        mi_signalSem();
         return ERROR;
     }
 
     // Liberamos inodo que se ha reservado asociado a la entrada (inodo2)
     if(liberar_inodo(p_inodo2)<0){
-
+        mi_signalSem();
         return ERROR;
     }
 
@@ -633,16 +638,16 @@ int mi_link(const char *camino1, const char *camino2)
     inodo1.nlinks++;
     // Aztualizamos los cambios en el dispositivo
     if(escribir_inodo(p_inodo1, &inodo1)<0){
-
+        mi_signalSem();
         return ERROR;
     }
-
+    mi_signalSem();
     return 0;
 }
 
 int mi_unlink(const char *camino)
 {
-
+    mi_waitSem();
     // Variables para buscar entrada
     unsigned int p_inodo_dir, p_inodo, p_entrada;
     p_inodo_dir = p_inodo = p_entrada = 0;
@@ -656,11 +661,12 @@ int mi_unlink(const char *camino)
     struct entrada entrada;
 
     // Comprobamos que existe la entrada
-    error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 4);
+    error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0, 0);//ultimo 0 por 4
 
     if (error < 0)
     {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return ERROR;
     }
 
@@ -668,21 +674,23 @@ int mi_unlink(const char *camino)
     if (leer_inodo(p_inodo, &inodo) == -1)
     {
         // Error lectura del inodo
+        mi_signalSem();
         return ERROR;
     }
 
     // Si se trata de un directorio y no está vacío entonces no se puede borrar
-    if (inodo.tipo == 'd' && inodo.tamEnBytesLog != 0)
+    if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0)
     {
 
         printf("El directorio no está vacío, no se puede borrar \n");
-
+        mi_signalSem();
         return -1;
     }
 
     //  Leemos el inodo asociado al directorio que contiene la entrada que queremos eliminar
     if (leer_inodo(p_inodo_dir, &inodo_dir) == -1)
     {
+        mi_signalSem();
         // Error lectura del inodo
         return ERROR;
     }
@@ -693,17 +701,18 @@ int mi_unlink(const char *camino)
     // Si no es la última entrada
     if (p_entrada != (nEntradas - 1))
     {
-
+        memset(&entrada, 0, sizeof(entrada));
         //  Leemos la última entrada
         if (mi_read_f(p_inodo_dir, &entrada, (nEntradas - 1) * sizeof(entrada), sizeof(entrada)) < 0)
         {
+            mi_signalSem();
             return ERROR;
         }
 
         // La escribimos en la posición de la entrada que queremos eliminar
         if (mi_write_f(p_inodo_dir, &entrada, p_entrada * sizeof(entrada), sizeof(entrada)) < 0)
         {
-
+            mi_signalSem();
             return ERROR;
         }
     }
@@ -711,7 +720,7 @@ int mi_unlink(const char *camino)
     // Truncamos el inodo a su tamaño menos el tamaño de una entrada
     if (mi_truncar_f(p_inodo_dir, (inodo_dir.tamEnBytesLog - sizeof(entrada))) < 0)
     {
-
+        mi_signalSem();
         return ERROR;
     }
 
@@ -725,7 +734,7 @@ int mi_unlink(const char *camino)
         // Liberaremos el inodo
         if (liberar_inodo(p_inodo) < 0)
         {
-
+            mi_signalSem();
             return ERROR;
         }
     }
@@ -736,9 +745,10 @@ int mi_unlink(const char *camino)
         inodo.ctime = time(NULL);
         if (escribir_inodo(p_inodo, &inodo) < 0)
         {
+            mi_signalSem();
             return ERROR;
         }
     }
-
+    mi_signalSem();
     return 0;
 }
