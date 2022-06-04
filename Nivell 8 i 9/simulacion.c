@@ -1,5 +1,6 @@
 #include "simulacion.h"
-static int acabados;
+static int acabados=0;
+
 
 int main(int argc, char **argv)
 {
@@ -7,8 +8,6 @@ int main(int argc, char **argv)
     char directorioSimulacion[30];
     time_t tiempo = time(NULL);
     struct tm *tm = localtime(&tiempo);
-
-    acabados = 0;
 
     // Asociamos señal de final de proceso a la función enterrador
     signal(SIGCHLD, reaper);
@@ -39,7 +38,7 @@ int main(int argc, char **argv)
             char ficheroProceso[60];
 
             // Creamos nombre del directorio i fichero para el proceso i-ésimo
-            sprintf(directorioProceso, "%sproceso_%d", directorioSimulacion, getpid());
+            sprintf(directorioProceso, "%sproceso_%d/", directorioSimulacion, getpid());
             sprintf(ficheroProceso, "%sprueba.dat", directorioProceso);
 
             // Creamos el directorio
@@ -62,11 +61,12 @@ int main(int argc, char **argv)
                 registro.nRegistro = rand() % REGMAX;
 
                 mi_write(ficheroProceso, &registro, registro.nRegistro * sizeof(struct REGISTRO), sizeof(struct REGISTRO));
-
+                printf(ANSI_COLOR_BLUE "[simulacion.c -> Escritura %d en %s]\n",nescritura,ficheroProceso);
+                
                 // Esperamos 0,05 segundos para la siguiente escritura
                 usleep(50000);
             }
-            printf("[Poceso %d: Completadas %d escrituras en %sprueba.dat] \n", proceso, (nescritura-1), directorioProceso);
+            printf(ANSI_COLOR_RED "[Proceso %d: Completadas %d escrituras en %sprueba.dat] \n", proceso, (nescritura-1), directorioProceso);
             // Desmontamos dispositivo
             bumount();
             // Para enviar la señal SIGCHLD

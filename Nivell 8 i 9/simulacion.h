@@ -2,10 +2,12 @@
 #include <signal.h>
 #include "directorios.h"
 
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_BLUE "\x1b[34m"
+
 #define NUMPROCESOS 100
 #define NUMESCRITURAS 50
-#define REGMAX  (((12+256+256*256+256*256*256)-1)*BLOCKSIZE)
-
+#define REGMAX  500000
 struct REGISTRO{
 
     time_t fecha;
@@ -13,3 +15,5 @@ struct REGISTRO{
     int nEscritura;
     int nRegistro;
 };
+
+void reaper();
