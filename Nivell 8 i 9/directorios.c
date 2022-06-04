@@ -2,7 +2,7 @@
 #include "debugging.h"
 #include <string.h>
 
-struct UltimaEntrada UltimaEntrada;
+struct UltimaEntrada UltimaEntrada[2];
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 {
@@ -499,9 +499,9 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
     unsigned int p_inodo;
 
     // Comprobamos si coincide con la ultima entrada
-    if (strcmp(UltimaEntrada.camino, camino) == 0)
+    if (strcmp(UltimaEntrada[0].camino, camino) == 0)
     {
-        p_inodo = UltimaEntrada.p_inodo;
+        p_inodo = UltimaEntrada[0].p_inodo;
 #if DEBUGN9
         printf("[mi_write()--> Utilizamos la caché de escritura en vez de llamar a buscar_entrada()]\n");
 #endif
@@ -523,8 +523,8 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 #if DEBUGN9
         printf("[mi_write() --> Actualizamos la caché de escritura]\n");
 #endif
-        strcpy(UltimaEntrada.camino, camino);
-        UltimaEntrada.p_inodo = p_inodo;
+        strcpy(UltimaEntrada[0].camino, camino);
+        UltimaEntrada[0].p_inodo = p_inodo;
     }
 
     nbytesEscritos = mi_write_f(p_inodo, buf, offset, nbytes);
@@ -538,9 +538,9 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     unsigned int p_inodo;
 
     // Comprobamos si coincide con la ultima entrada
-    if (strcmp(UltimaEntrada.camino, camino) == 0)
+    if (strcmp(UltimaEntrada[1].camino, camino) == 0)
     {
-        p_inodo = UltimaEntrada.p_inodo;
+        p_inodo = UltimaEntrada[1].p_inodo;
 #if DEBUGN9
         printf("[mi_read()--> Utilizamos la caché de escritura en vez de llamar a buscar_entrada()]\n");
 #endif
@@ -563,8 +563,8 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 #endif
 
         // Actualizamos la última entrada
-        strcpy(UltimaEntrada.camino, camino);
-        UltimaEntrada.p_inodo = p_inodo;
+        strcpy(UltimaEntrada[1].camino, camino);
+        UltimaEntrada[1].p_inodo = p_inodo;
     }
 
     nBytesLeidos = mi_read_f(p_inodo, buf, offset, nbytes);

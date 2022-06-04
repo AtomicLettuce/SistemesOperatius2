@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "directorios.h": "c",
-        "debugging.h": "c"
+        "debugging.h": "c",
+        "simulacion.h": "c",
+        "ficheros.h": "c",
+        "ficheros_basico.h": "c",
+        "bloques.h": "c",
+        "signal.h": "c",
+        "verificacion.h": "c"
     }
 }
