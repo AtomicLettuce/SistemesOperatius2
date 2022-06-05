@@ -31,7 +31,7 @@ int bmount(const char *camino)
 int bumount()
 {
     descriptor = close(descriptor);
-    if (close(descriptor) == -1)
+    if (descriptor == -1)
     {
         perror("ERROR: ");
         return ERROR;
