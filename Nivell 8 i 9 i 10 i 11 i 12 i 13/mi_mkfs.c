@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "ficheros_basico.h"
 int main(int argc, char **argv)
 {

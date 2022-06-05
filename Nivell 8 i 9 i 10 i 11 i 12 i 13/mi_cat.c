@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "directorios.h"
 
 // Sintaxis Sintaxis: ./mi_cat <disco> </ruta_fichero>

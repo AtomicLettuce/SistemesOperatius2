@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include <sys/wait.h>
 #include <signal.h>
 #include "directorios.h"
@@ -5,7 +6,7 @@
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_BLUE "\x1b[34m"
 
-#define NUMPROCESOS 10
+#define NUMPROCESOS 100
 #define NUMESCRITURAS 50
 #define REGMAX  500000
 struct REGISTRO{

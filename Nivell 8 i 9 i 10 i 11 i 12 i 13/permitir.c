@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 // Programa ficticio para probar las funcionalidades de cambio de permisos
 
 #include "ficheros.h"

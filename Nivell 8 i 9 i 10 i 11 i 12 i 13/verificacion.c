@@ -1,3 +1,5 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
+
 #include "verificacion.h"
 
 int main(int argc, char **argv)

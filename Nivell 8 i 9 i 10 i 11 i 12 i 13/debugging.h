@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #define DEBUGN2 0
 #define DEBUGN3 0
 #define DEBUGN4 0
