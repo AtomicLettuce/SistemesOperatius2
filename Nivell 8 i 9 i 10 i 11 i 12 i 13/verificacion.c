@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < NUMPROCESOS; i++)
     {
-        pidbarra = strchr(entradas[i].nombre, '-');
+        pidbarra = strchr(entradas[i].nombre, '_');
         // Desplazamos puntero para sacar el PID
         pidbarra++;
         pid = atoi(pidbarra);
