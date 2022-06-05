@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "directorios.h"
 
 // Sintaxis: ./mi_link disco /ruta_fichero_original /ruta_enlace

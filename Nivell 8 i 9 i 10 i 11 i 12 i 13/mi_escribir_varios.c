@@ -1,4 +1,4 @@
-
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 //Programa para testear las cachés de directorios
 #include "directorios.h"
 

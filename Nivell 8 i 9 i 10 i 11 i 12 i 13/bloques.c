@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "bloques.h"
 #include "debugging.h"
 #include "semaforo_mutex_posix.h"

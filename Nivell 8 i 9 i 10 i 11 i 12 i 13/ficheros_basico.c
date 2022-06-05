@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "debugging.h"
 #include "ficheros_basico.h"
 #define ERROR -1

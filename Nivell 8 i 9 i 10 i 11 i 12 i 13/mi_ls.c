@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "directorios.h"
 
 // Lista el contenido de un directorios empleando mi_dir()

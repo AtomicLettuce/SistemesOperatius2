@@ -1,3 +1,4 @@
+// Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "directorios.h"
 #include "debugging.h"
 #include <string.h>
