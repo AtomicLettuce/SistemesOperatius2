@@ -2,10 +2,9 @@
 
 int main(int argc, char **argv)
 {
-
     if (argc != 3)
     {
-        printf("Sintaxis: ./verificacion <nombre_dispositivo><directorio_simulacion>");
+        printf("Sintaxis: ./verificacion <nombre_dispositivo> <directorio_simulacion>");
         return EXIT_FAILURE;
     }
     // Montamos dispositivo
@@ -31,38 +30,34 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    int numentradas = inodo.tamEnBytesLog / sizeof(struct entrada);
+    unsigned int numentradas = (inodo.tamEnBytesLog / sizeof(struct entrada));
 
     if (numentradas != NUMPROCESOS)
     {
-        printf("[verificacion.c -> ERROR: La cantidad de entradas no coincide con NUMPROCESOS]");
+        printf("[verificacion.c -> ERROR: La cantidad de entradas no coincide con NUMPROCESOS]\n");
         return EXIT_FAILURE;
     }
-
     char rutaVerificacion[80];
     strcpy(rutaVerificacion, argv[2]);
     strcat(rutaVerificacion, "informe.txt");
-
     // Creamos fichero informe.txt
     mi_creat(rutaVerificacion, 6);
-
     // Inicializamos array de entradas
     struct entrada entradas[NUMPROCESOS * sizeof(struct entrada)];
-    memset(&entradas, 0, sizeof(entradas));
-
+    memset(entradas, 0, sizeof(entradas));
     mi_read(argv[2], entradas, 0, NUMPROCESOS * sizeof(struct entrada));
 
     int offsetInforme = 0;
 
     char *pidbarra;
     unsigned int pid;
-    int cant_registros_buffer_escrituras =256;
+    int cant_registros_buffer_escrituras = 256;
     struct REGISTRO buffer_escrituras[cant_registros_buffer_escrituras];
     struct INFORMACION info;
 
     for (int i = 0; i < NUMPROCESOS; i++)
     {
-        pidbarra = strchr(entradas[i].nombre, '-');
+        pidbarra = strchr(entradas[i].nombre, '_');
         // Desplazamos puntero para sacar el PID
         pidbarra++;
         pid = atoi(pidbarra);
@@ -70,7 +65,7 @@ int main(int argc, char **argv)
         // Inicializamos buffer
         memset(buffer_escrituras, 0, sizeof(buffer_escrituras));
         int offset = 0;
-        
+
         // Creamos string del fichero que vamos a leer
         char rutaProceso[100];
         sprintf(rutaProceso, "%sproceso_%d/prueba.dat", argv[2], pid);
@@ -140,7 +135,6 @@ int main(int argc, char **argv)
         }
         printf("%d escrituras validadas en %s \n", info.nEscrituras, rutaProceso);
         // Escribimos los datos del struct info en el fichero informe.txt
-
 
         char buffer1[500];
         char buffer2[100];

@@ -222,7 +222,7 @@ void mostrar_error_buscar_entrada(int error)
         fprintf(stderr, "Error: Permiso denegado de lectura.\n");
         break;
     case -3:
-        fprintf(stderr, "Error: No existe el archivo o el directorio.\n");
+        fprintf(stderr, "Errorsito: No existe el archivo o el directorio.\n");
         break;
     case -4:
         fprintf(stderr, "Error: No existe algún directorio intermedio.\n");
@@ -258,7 +258,7 @@ int mi_creat(const char *camino, unsigned char permisos)
         mi_signalSem();
         return ERROR;
     }
-
+    mi_signalSem();
     return 0;
 }
 

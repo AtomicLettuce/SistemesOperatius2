@@ -5,7 +5,7 @@
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_BLUE "\x1b[34m"
 
-#define NUMPROCESOS 100
+#define NUMPROCESOS 10
 #define NUMESCRITURAS 50
 #define REGMAX  500000
 struct REGISTRO{
