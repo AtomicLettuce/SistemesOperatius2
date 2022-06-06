@@ -1,6 +1,6 @@
 // Autors: Marc Melià Flexas, Pau Rosado Muñoz, Xavier Vives Marcus
 #include "directorios.h"
-// Sintaxis: :/mi_rm disco /ruta
+// Sintaxis: :/mi_rmdir disco /ruta
 int main(int argc, char **argv)
 {
 
@@ -16,16 +16,25 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }else
 
-        // Llamada a unlink
-        mi_unlink(argv[2]);
+        // Comprobamos si es un directorio
+        if (argv[2][strlen(argv[2]) - 1] == '/')
+        {
+          // Llamada a unlink
+          mi_unlink(argv[2]);
 
+        }else{
+
+            printf("ERROR: No es un directorio\n");
+            return EXIT_FAILURE;
+
+        }
         // Desmontamos el dispositivo
         bumount();
         return EXIT_SUCCESS;
     }
     else
     {
-        printf("Sintaxis: :/mi_rm disco /ruta");
+        printf("Sintaxis: :/mi_rmdir disco /ruta");
         return -1;
     }
 }
