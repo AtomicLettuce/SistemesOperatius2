@@ -11,42 +11,42 @@ int main(int argc, char **argv)
         printf("Sintaxis: mi_cat <disco> </ruta_fichero>\n");
         return -1;
     }
+    // Montamos el dispositivo
+    bmount(argv[1]);
+
+    // comprobar que la ruta se corresponda a un fichero
+
+    // Caso en el que se trata de un fichero
+    if (argv[2][strlen(argv[2]) - 1] != '/')
+    {
+        char *ruta = argv[2];
+        unsigned int leidos, offset = 0;
+        unsigned int t_leidos = 0;
+        int tambuffer = 1500;
+
+        char buffer_texto[tambuffer];
+        memset(buffer_texto, 0, tambuffer);
+
+        leidos = mi_read(ruta, buffer_texto, offset, tambuffer);
+        while (leidos > 0)
+        {
+            if (leidos == -1)
+            {
+                printf("ERROR");
+                return -1;
+            }
+            t_leidos += leidos;
+            write(1, buffer_texto, leidos);
+            memset(buffer_texto, 0, tambuffer);
+            offset += tambuffer;
+            leidos = mi_read(ruta, buffer_texto, offset, tambuffer);
+        }
+        fprintf(stderr, "\ntotal_leidos %d\n", t_leidos);
+    }
+    // Caso en el que no es un fichero
     else
     {
-        // Montamos el dispositivo
-        bmount(argv[1]);
-
-        // comprobar que la ruta se corresponda a un fichero
-
-        // Caso en el que se trata de un fichero
-        if (argv[2][strlen(argv[2]) - 1] != '/')
-        {
-            int tambuffer = BLOCKSIZE * 4;
-            int offset = 0;
-            char buffer[tambuffer];
-            unsigned int nbytesleidos = 0;
-            unsigned int leidos;
-            memset(buffer, 0, tambuffer);
-
-            while ((leidos = mi_read(argv[2], buffer, offset, tambuffer)) > 0)
-            {
-                fwrite(buffer, sizeof(char), leidos, stdout);
-                nbytesleidos += leidos;
-                offset += leidos; 
-                memset(buffer, 0, tambuffer);
-            }
-            if (nbytesleidos < 0)
-            {
-                nbytesleidos = 0;
-            }
-            printf("\nTotal leidos: %d\n", nbytesleidos);
-            bumount();
-            return 0;
-        }
-        // Caso en el que no es un fichero
-        else
-        {
-            printf("ERROR: No se trata de un fichero\n");
-        }
+        printf("ERROR: No se trata de un fichero\n");
     }
+    return 0;
 }
