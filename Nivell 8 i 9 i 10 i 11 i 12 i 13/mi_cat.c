@@ -48,5 +48,6 @@ int main(int argc, char **argv)
     {
         printf("ERROR: No se trata de un fichero\n");
     }
+    // Return 0?
     return 0;
 }
