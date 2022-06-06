@@ -17,8 +17,18 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }else
 
-        // Llamada a unlink
-        mi_unlink(argv[2]);
+           // Comprobamos si es un fichero
+        if (argv[2][strlen(argv[2]) - 1] != '/')
+        {
+          // Llamada a unlink
+          mi_unlink(argv[2]);
+
+        }else{
+
+            printf("ERROR: No es un fichero\n");
+            return EXIT_FAILURE;
+
+        }
 
         // Desmontamos el dispositivo
         bumount();
